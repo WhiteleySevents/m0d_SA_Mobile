@@ -30,7 +30,7 @@ unsigned char GetPacketID(Packet *p)
 		return (unsigned char) p->data[0];
 }
 
-CNetGame::CNetGame(const char* szHostOrIp, int iPort, const char* szPlayerName, const char* szPass)
+CNetGame::CNetGame(char* szHostOrIp, int iPort, const char* szPlayerName, const char* szPass)
 {
 	strcpy(m_szHostName, "San Andreas Multiplayer");
 	strncpy(m_szHostOrIp, szHostOrIp, sizeof(m_szHostOrIp));
@@ -44,6 +44,11 @@ CNetGame::CNetGame(const char* szHostOrIp, int iPort, const char* szPlayerName, 
 	m_pPickupPool = new CPickupPool();
 	m_pGangZonePool = new CGangZonePool();
 	m_pLabelPool = new CText3DLabelsPool();
+
+	// removed:
+	//m_pTextDrawPool = new CTextDrawPool();
+	//m_pActorPool = new CActorPool();
+	//m_pMenuPool = new CMenuPool();
 
 	m_pRakClient = RakNetworkFactory::GetRakClientInterface();
 	RegisterRPCs(m_pRakClient);
@@ -61,7 +66,7 @@ CNetGame::CNetGame(const char* szHostOrIp, int iPort, const char* szPlayerName, 
 	m_fGravity = (float)0.008000000;
 	m_bUseCJWalk = false;
 	m_bDisableEnterExits = false;
-	m_fNameTagDrawDistance = 60.0f;
+	m_fNameTagDrawDistance = 70.0f;
 	m_bZoneNames = false;
 	m_bInstagib = false;
 	m_iDeathDropMoney = 0;
@@ -72,7 +77,9 @@ CNetGame::CNetGame(const char* szHostOrIp, int iPort, const char* szPlayerName, 
 
 	pGame->EnableClock(false);
 	pGame->EnableZoneNames(false);
-	if(pChatWindow) pChatWindow->AddDebugMessage("{FFFFFF}SA-MP {B9C9BF}" SAMP_VERSION " {FFFFFF}Started");
+	if(pChatWindow) {
+		pChatWindow->AddDebugMessage("{FFFFFF}SA-MP {B9C9BF}" SAMP_VERSION " {FFFFFF}Started");
+	}
 }
 
 CNetGame::~CNetGame()
@@ -119,6 +126,23 @@ void CNetGame::Process()
 
 	if(m_bHoldTime)
 		pGame->SetWorldTime(m_byteWorldTime, m_byteWorldMinute);
+
+	if(!pGame->IsAnimationLoaded("PARACHUTE")) pGame->RequestAnimation("PARACHUTE");
+				
+	if(!pGame->IsModelLoaded(OBJECT_PARACHUTE)) {
+		pGame->RequestModel(OBJECT_PARACHUTE);
+	}
+
+	// keep the throwable weapon models loaded
+	if (!pGame->IsModelLoaded(WEAPON_MODEL_TEARGAS))
+		pGame->RequestModel(WEAPON_MODEL_TEARGAS);
+	if (!pGame->IsModelLoaded(WEAPON_MODEL_GRENADE))
+		pGame->RequestModel(WEAPON_MODEL_GRENADE);
+	if (!pGame->IsModelLoaded(WEAPON_MODEL_MOLOTOV))
+		pGame->RequestModel(WEAPON_MODEL_MOLOTOV);
+
+	// cellphone
+	if (!pGame->IsModelLoaded(330)) pGame->RequestModel(330);
 
 	if(GetGameState() == GAMESTATE_CONNECTED)
 	{
@@ -231,8 +255,16 @@ void CNetGame::UpdateNetwork()
 			Packet_PassengerSync(pkt);
 			break;
 
+			case ID_AIM_SYNC:
+			Packet_AimSync(pkt);
+			break;
+
 			case ID_MARKERS_SYNC:
 			Packet_MarkersSync(pkt);
+			break;
+
+			case ID_WEAPONS_UPDATE:
+			Packet_WeaponsUpdate(pkt);
 			break;
 		}
 
@@ -266,6 +298,25 @@ void CNetGame::ResetPickupPool()
 
 	m_pPickupPool = new CPickupPool();
 }
+
+//void CNetGame::ResetMenuPool()
+//{
+//	// goodbye
+//}
+//
+//void CNetGame::ResetActorPool()
+//{
+//	// goodbye
+//}
+//
+//void CNetGame::ResetTextDrawPool()
+//{
+//	// goodbye
+//	// goodbye
+//	// goodbye
+//	// goodbye
+//	// goodbye
+//}
 
 void CNetGame::ResetGangZonePool()
 {
@@ -315,8 +366,10 @@ void CNetGame::ShutDownForGameRestart()
 	ResetGangZonePool();
 	ResetLabelPool();
 
+	// removed (3)
+
 	m_bDisableEnterExits = false;
-	m_fNameTagDrawDistance = 60.0f;
+	m_fNameTagDrawDistance = 70.0f;
 	m_byteWorldTime = 12;
 	m_byteWorldMinute = 0;
 	m_byteWeather = 1;
@@ -450,6 +503,33 @@ void CNetGame::Packet_ConnectionLost(Packet* pkt)
 	SetGameState(GAMESTATE_WAIT_CONNECT);
 }
 
+void CNetGame::Packet_WeaponsUpdate(Packet *pkt)
+{
+	RakNet::BitStream bsData(pkt->data, pkt->length, false);
+	CPlayerPool *pPlayerPool = GetPlayerPool();
+	PLAYERID bytePlayerID;
+
+	uint8_t byteLength = (pkt->length - 1) / 4; // Should be number of changed weapons
+	
+	//printf("Original: %d New: %d", p->length, byteLength);
+	
+	uint8_t byteIndex;
+	uint8_t byteWeapon = GetPlayerPool()->GetLocalPlayer()->GetPlayerPed()->m_byteCurrentWeapon;
+	uint8_t wordAmmo;
+	
+	if (pPlayerPool)
+	{
+		//printf("1");
+		if (pPlayerPool->GetSlotState(bytePlayerID))
+		{
+			CLocalPlayer* pPlayerPool = GetPlayerPool()->GetLocalPlayer();
+			bsData.Read(byteIndex); // Dump the first byte, we don't need it
+			bsData.Read(byteWeapon);
+			bsData.Read(wordAmmo);
+		}
+	}
+}
+
 void CNetGame::Packet_ConnectionSucceeded(Packet* pkt)
 {
 	if(pChatWindow)
@@ -547,6 +627,7 @@ void CNetGame::Packet_PlayerSync(Packet* pkt)
 
 	// CURRENT WEAPON
     bsPlayerSync.Read(ofSync.byteCurrentWeapon);
+    //bsPlayerSync.Read(wepa);
     // SPECIAL ACTION
     bsPlayerSync.Read(ofSync.byteSpecialAction);
 
@@ -684,6 +765,12 @@ void CNetGame::Packet_PassengerSync(Packet* pkt)
 			pPlayer->StorePassengerFullSyncData(&psSync);
 	}
 }
+
+void CNetGame::Packet_AimSync(Packet *pkt)
+{ 
+	// goodbye
+}
+
 
 void CNetGame::Packet_MarkersSync(Packet *pkt)
 {

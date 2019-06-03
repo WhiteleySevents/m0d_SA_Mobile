@@ -70,7 +70,7 @@ void InitGame(RPCParameters *rpcParams)
 	CPlayerPool *pPlayerPool = pNetGame->GetPlayerPool();
 	CLocalPlayer *pLocalPlayer = nullptr;
 	if(pPlayerPool) pLocalPlayer = pPlayerPool->GetLocalPlayer();
-
+	
 	pGame->SetGravity(pNetGame->m_fGravity);
 
 	if(pNetGame->m_bDisableEnterExits)
@@ -205,6 +205,8 @@ void RequestClass(RPCParameters *rpcParams)
 	CPlayerPool *pPlayerPool = pNetGame->GetPlayerPool();
 	CLocalPlayer *pLocalPlayer = 0;
 
+	
+	
 	if(pPlayerPool) pLocalPlayer = pPlayerPool->GetLocalPlayer();
 
 	bsData.Read(byteRequestOutcome);
@@ -513,6 +515,34 @@ void ExitVehicle(RPCParameters *rpcParams)
 	}	
 }
 
+void PlayerGiveTakeDamage(RPCParameters *rpcParams)
+{
+	Log("RPC: PlayerGiveTakeDamage");
+	unsigned char * Data = reinterpret_cast<unsigned char *>(rpcParams->input);
+	int iBitLength = rpcParams->numberOfBitsOfData;
+
+	RakNet::BitStream bsData((unsigned char*)Data,(iBitLength/8)+1,false);
+	bool flag;
+	uint16_t playerId;
+	float Damage;
+	uint32_t weaponid;
+	uint32_t bodypart;
+
+	bsData.Read(flag);
+	bsData.Read(playerId);
+	bsData.Read(Damage);
+	bsData.Read(weaponid);
+	bsData.Read(bodypart);
+
+	if (flag) {
+		Log("+PlayerGiveTakeDamage (%d, %f, %d, %d)", playerId, Damage, weaponid, bodypart);
+	}
+	else {
+		Log("-PlayerGiveTakeDamage (%d, %f, %d, %d)", playerId, Damage, weaponid, bodypart);
+	}
+	pNetGame->GetRakClient()->RPC(&RPC_PlayerGiveTakeDamage, &bsData, HIGH_PRIORITY, RELIABLE_SEQUENCED, 0, false, UNASSIGNED_NETWORK_ID, NULL);
+}
+
 void DialogBox(RPCParameters *rpcParams)
 {
 	Log("RPC: DialogBox");
@@ -557,11 +587,11 @@ void DialogBox(RPCParameters *rpcParams)
 
 	
 	Log("DialogBox: %d", wDialogID);
-	if(wDialogID == 2)
-	{
-		pNetGame->SendDialogResponse(wDialogID, 1, -1, "123123");
-		return;
-	}
+	//if(wDialogID == 2)
+	//{
+		//pNetGame->SendDialogResponse(wDialogID, 1, -1, "123123");
+		//return;
+	//}
 
 	pDialogWindow->Show(true);
 }
@@ -750,6 +780,7 @@ void RegisterRPCs(RakClientInterface* pRakClient)
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrDialogBox, DialogBox);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_GameModeRestart, GameModeRestart);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ConnectionRejected, ConnectionRejected);
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_PlayerGiveTakeDamage, PlayerGiveTakeDamage);
 
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_Pickup, Pickup);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_DestroyPickup, DestroyPickup);
@@ -784,6 +815,7 @@ void UnRegisterRPCs(RakClientInterface* pRakClient)
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrDialogBox);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_GameModeRestart);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ConnectionRejected);
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_PlayerGiveTakeDamage);
 
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_Pickup);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_DestroyPickup);

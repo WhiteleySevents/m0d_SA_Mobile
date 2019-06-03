@@ -2,11 +2,13 @@
 #include "game/game.h"
 #include "netgame.h"
 #include "chatwindow.h"
+#include "util/armhook.h"
 
 extern CGame *pGame;
 extern CNetGame *pNetGame;
 extern CChatWindow *pChatWindow;
 
+// Te koro 9 see
 CRemotePlayer::CRemotePlayer()
 {
 	m_PlayerID = INVALID_PLAYER_ID;
@@ -24,6 +26,7 @@ CRemotePlayer::CRemotePlayer()
 	m_dwLastRecvTick = 0;
 	m_dwUnkTime = 0;
 
+	m_byteCurrentWeapon = 0;
 	m_byteSpecialAction = 0;
 	m_byteSeatID = 0;
 
@@ -43,6 +46,8 @@ void CRemotePlayer::Process()
 	MATRIX4X4 matPlayer, matVehicle;
 	VECTOR vecMoveSpeed;
 
+
+
 	if(IsActive())
 	{
 		// ---- ONFOOT NETWORK PROCESSING ----
@@ -51,7 +56,21 @@ void CRemotePlayer::Process()
 		{
 			UpdateOnFootPositionAndSpeed(&m_ofSync.vecPos, &m_ofSync.vecMoveSpeed);
 			UpdateOnFootTargetPosition();
+			GetPlayerPed()->GiveWeapon(m_ofSync.byteCurrentWeapon,9999);
+			if(m_pPlayerPed->IsAdded() && m_pPlayerPed->GetCurrentWeapon() != m_ofSync.byteCurrentWeapon) {
+  				//m_pPlayerPed->SetArmedWeapon(m_ofSync.byteCurrentWeapon);
+  				m_pPlayerPed->GiveWeapon(m_ofSync.byteCurrentWeapon,9999);
+
+  				// double check
+  				if(m_pPlayerPed->GetCurrentWeapon() != m_ofSync.byteCurrentWeapon) {
+  					m_pPlayerPed->GiveWeapon(m_ofSync.byteCurrentWeapon,9999);
+  					//m_pPlayerPed->SetArmedWeapon(m_ofSync.byteCurrentWeapon);
+  				}
+  			}
 		}
+
+
+
 		else if(GetState() == PLAYER_STATE_DRIVER &&
 			m_byteUpdateFromNetwork == UPDATE_TYPE_INCAR && m_pPlayerPed->IsInVehicle())
 		{
@@ -494,6 +513,13 @@ void CRemotePlayer::StoreOnFootFullSyncData(ONFOOT_SYNC_DATA *pofSync, uint32_t 
 		m_fReportedHealth = (float)pofSync->byteHealth;
 		m_fReportedArmour = (float)pofSync->byteArmour;
 		m_byteSpecialAction = pofSync->byteSpecialAction;
+
+		m_byteCurrentWeapon = pofSync->byteCurrentWeapon;
+
+		if (m_byteCurrentWeapon) {
+			NOP(g_libGTASA+0x434D94, 6);
+		}
+
 		m_byteUpdateFromNetwork = UPDATE_TYPE_ONFOOT;
 
 		if(m_pPlayerPed)
@@ -530,11 +556,21 @@ void CRemotePlayer::StoreInCarFullSyncData(INCAR_SYNC_DATA *picSync, uint32_t dw
 
 		m_byteSpecialAction = 0;
 
+		if(m_pPlayerPed)
+		{
+			m_pPlayerPed->m_byteCurrentWeapon = (uint8_t)picSync->byteCurrentWeapon;
+		}
+		
 		if(m_pPlayerPed && !m_pPlayerPed->IsInVehicle())
 			HandleVehicleEntryExit();
 
 		SetState(PLAYER_STATE_DRIVER);
 	}
+}
+
+void CRemotePlayer::StoreAimFullSyncData(AIM_SYNC_DATA *paSync, uint32_t dwTime)
+{
+	// goodbye
 }
 
 void CRemotePlayer::StorePassengerFullSyncData(PASSENGER_SYNC_DATA *ppsSync)

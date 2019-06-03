@@ -8,12 +8,14 @@
 
 #include "localplayer.h"
 #include "remoteplayer.h"
+
 #include "playerpool.h"
 #include "vehiclepool.h"
 #include "gangzonepool.h"
 #include "objectpool.h"
 #include "pickuppool.h"
 #include "textlabelpool.h"
+#include "textdrawpool.h"
 
 #define GAMESTATE_WAIT_CONNECT	9
 #define GAMESTATE_CONNECTING	13
@@ -34,7 +36,7 @@
 class CNetGame
 {
 public:
-	CNetGame(const char* szHostOrIp, int iPort, const char* szPlayerName, const char* szPass);
+	CNetGame(char* szHostOrIp, int iPort, const char* szPlayerName, const char* szPass);
 	~CNetGame();
 
 	void Process();
@@ -45,6 +47,8 @@ public:
 	CPickupPool* GetPickupPool() { return m_pPickupPool; }
 	CGangZonePool* GetGangZonePool() { return m_pGangZonePool; }
 	CText3DLabelsPool* GetLabelPool() { return m_pLabelPool; }
+	//CTextDrawPool * GetTextDrawPool() { return m_pTextDrawPool; };
+
 	RakClientInterface* GetRakClient() { return m_pRakClient; };
 
 	int GetGameState() { return m_iGameState; }
@@ -55,6 +59,8 @@ public:
 	void ResetPickupPool();
 	void ResetGangZonePool();
 	void ResetLabelPool();
+	void ResetTextDrawPool();
+	
 	void ShutDownForGameRestart();
 
 	void SendChatMessage(const char* szMsg);
@@ -72,6 +78,8 @@ private:
 	CPickupPool* 		m_pPickupPool;
 	CGangZonePool*		m_pGangZonePool;
 	CText3DLabelsPool*	m_pLabelPool;
+	//CTextDrawPool		*m_pTextDrawPool;
+
 	int					m_iGameState;
 	uint32_t			m_dwLastConnectAttempt;
 
@@ -85,7 +93,10 @@ private:
 	void Packet_PlayerSync(Packet* pkt);
 	void Packet_VehicleSync(Packet* pkt);
 	void Packet_PassengerSync(Packet* pkt);
+	void Packet_AimSync(Packet* pkt);
 	void Packet_MarkersSync(Packet* pkt);
+	void Packet_WeaponsUpdate(Packet *pkt);
+	//void Packet_TrailerSync(Packet *pkt);
 
 public:
 	char m_szHostName[0xFF];

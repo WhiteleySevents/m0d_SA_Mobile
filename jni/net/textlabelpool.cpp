@@ -3,10 +3,14 @@
 #include "game/game.h"
 #include "chatwindow.h"
 #include "netgame.h"
+#include "dialog.h"
+#include "modsa.h"
 
 extern CNetGame *pNetGame;
 extern CChatWindow *pChatWindow;
 extern CGUI *pGUI;
+extern CDialogWindow *pDialogWindow;
+extern CModSAWindow *pModSAWindow;
 
 CText3DLabelsPool::CText3DLabelsPool()
 {
@@ -102,6 +106,8 @@ void CText3DLabelsPool::Delete(int labelID)
 {
 	if (m_pTextLabels[labelID])
 	{
+		m_pTextLabels[labelID]->text[0] = '\0';
+		
 		delete m_pTextLabels[labelID];
 		m_pTextLabels[labelID] = nullptr;
 		m_bSlotState[labelID] = false;
@@ -226,6 +232,8 @@ void TextWithColors(ImVec2 pos, ImColor col, const char* szStr)
 void CText3DLabelsPool::Draw()
 {
 	int hitEntity = 0;
+	//if(pDialogWindow->m_bIsActive)return;
+	//if(pModSAWindow->m_bIsActive)return;
 
 	for (int x = 0; x < MAX_TEXT_LABELS + MAX_PLAYER_TEXT_LABELS + 2; x++)
 	{

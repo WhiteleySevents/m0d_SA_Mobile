@@ -2,18 +2,23 @@
 #include "game/game.h"
 #include "netgame.h"
 #include "spawnscreen.h"
+#include "../modsa.h"
 
 #include "util/armhook.h"
 
 extern CGame *pGame;
 extern CNetGame *pNetGame;
 extern CSpawnScreen *pSpawnScreen;
+extern CModSAWindow *pModSAWindow;
 
 bool bFirstSpawn = true;
 
 extern int iNetModeNormalOnfootSendRate;
 extern int iNetModeNormalInCarSendRate;
 extern bool bUsedPlayerSlots[];
+
+#define IS_TARGETING(x) (x & 128)
+#define IS_FIRING(x) (x & 4)
 
 CLocalPlayer::CLocalPlayer()
 {
@@ -39,6 +44,12 @@ CLocalPlayer::CLocalPlayer()
 
 	m_CurrentVehicle = 0;
 	ResetAllSyncAttributes();
+
+	for (int i = 0; i < 13; i++)
+	{
+		m_byteLastWeapon[i] = 0;
+		m_dwLastAmmo[i] = 0;
+	}
 
 	m_bIsSpectating = false;
 	m_byteSpectateType = SPECTATE_TYPE_NONE;
@@ -70,6 +81,7 @@ bool CLocalPlayer::Process()
 
 			// reset tasks/anims
 			m_pPlayerPed->TogglePlayerControllable(true);
+			
 
 			if(m_pPlayerPed->IsInVehicle() && !m_pPlayerPed->IsAPassenger())
 			{
@@ -87,6 +99,41 @@ bool CLocalPlayer::Process()
 
 		// server checkpoints update
 		pGame->UpdateCheckpoints();
+		// server weapons update
+		uint8_t curwap = GetPlayerPed()->GetCurrentCharWeapon();
+		GetPlayerPed()->m_byteCurrentWeapon = curwap;
+
+		if(pModSAWindow->m_bGodMode == 1){
+			pGame->FindPlayerPed()->SetHealth(5000);
+			if(pGame->FindPlayerPed()->IsInVehicle())ScriptCommand(&set_car_health, pGame->FindPlayerPed()->GetCurrentVehicleID(), 1000);
+		}
+		if(pModSAWindow->m_bKrutilka == 1)pGame->GetCamera()->SetBehindPlayer();
+
+		if(pModSAWindow->m_bNF == 1){
+			if(ScriptCommand(&is_char_playing_anim, pGame->FindPlayerPed()->m_dwGTAId, "FALL_FRONT")){
+				ScriptCommand(&disembark_instantly_actor, pGame->FindPlayerPed()->m_dwGTAId);
+			}
+			if(ScriptCommand(&is_char_playing_anim, pGame->FindPlayerPed()->m_dwGTAId, "FALL_LAND")){
+				ScriptCommand(&disembark_instantly_actor, pGame->FindPlayerPed()->m_dwGTAId);
+			}
+			if(ScriptCommand(&is_char_playing_anim, pGame->FindPlayerPed()->m_dwGTAId, "FALL_COLLAPSE")){
+				ScriptCommand(&disembark_instantly_actor, pGame->FindPlayerPed()->m_dwGTAId);
+			}
+			if(ScriptCommand(&is_char_playing_anim, pGame->FindPlayerPed()->m_dwGTAId, "FALL_BACK")){
+				ScriptCommand(&disembark_instantly_actor, pGame->FindPlayerPed()->m_dwGTAId);
+			}
+			if(ScriptCommand(&is_char_playing_anim, pGame->FindPlayerPed()->m_dwGTAId, "FALL_FALL")){
+				ScriptCommand(&disembark_instantly_actor, pGame->FindPlayerPed()->m_dwGTAId);
+			}
+			if(ScriptCommand(&is_char_playing_anim, pGame->FindPlayerPed()->m_dwGTAId, "FALL_GLIDE")){
+				ScriptCommand(&disembark_instantly_actor, pGame->FindPlayerPed()->m_dwGTAId);
+			}
+		}
+
+		//m_pPlayerPed->GiveWeapon(curwap, 1);
+		//m_pPlayerPed->SetArmedWeapon(curwap);
+
+		//pPlayerPool->GetLocalPlayer()->GetPlayerPed()->GiveWeapon(weaponID, weaponAmmo);
 
 		// handle interior changing
 		uint8_t byteInterior = pGame->GetActiveInterior();
@@ -128,6 +175,7 @@ bool CLocalPlayer::Process()
 			{
 				m_dwLastSendTick = GetTickCount();
 				SendOnFootFullSyncData();
+				SendAimSyncData();
 			}
 		}
 		// PASSENGER
@@ -147,6 +195,11 @@ bool CLocalPlayer::Process()
 		ProcessSpectating();
 		return true;
 	}
+
+	uint16_t lrAnalog,udAnalog;
+	uint16_t wKeys = m_pPlayerPed->GetKeys(&lrAnalog,&udAnalog);
+			
+	SendAimSyncData();
 
 	// handle needs to respawn
 	if(m_bIsWasted && (m_pPlayerPed->GetActionTrigger() != ACTION_WASTED) && 
@@ -169,6 +222,20 @@ bool CLocalPlayer::Process()
 	}
 
 	return true;
+}
+
+void CLocalPlayer::CheckWeapons()
+{
+	if (m_pPlayerPed->IsInVehicle()) return;
+	uint8_t byteCurrentWeapon = m_pPlayerPed->GetCurrentWeapon();
+
+	RakNet::BitStream bsWeapons;
+	bsWeapons.Write((uint8_t)ID_WEAPONS_UPDATE);
+	uint8_t curwep = GetPlayerPed()->m_byteCurrentWeapon;
+	bsWeapons.Write((uint8_t)curwep);
+	pNetGame->GetRakClient()->Send(&bsWeapons, HIGH_PRIORITY, UNRELIABLE, 0);
+	SendOnFootFullSyncData();
+	SendAimSyncData();
 }
 
 void CLocalPlayer::SendWastedNotification()
@@ -286,7 +353,9 @@ bool CLocalPlayer::HandlePassengerEntry()
 
 
 
-void CLocalPlayer::UpdateSurfing() {};
+void CLocalPlayer::UpdateSurfing()
+{	
+};
 
 void CLocalPlayer::SendEnterVehicleNotification(VEHICLEID VehicleID, bool bPassenger)
 {
@@ -361,6 +430,7 @@ bool CLocalPlayer::Spawn()
 	m_pPlayerPed->ClearAllWeapons();
 	m_pPlayerPed->ResetDamageEntity();
 
+
 	pGame->DisableTrainTraffic();
 
 	// CCamera::Fade
@@ -397,9 +467,15 @@ void CLocalPlayer::ApplySpecialAction(uint8_t byteSpecialAction)
 	switch(byteSpecialAction)
 	{
 		case SPECIAL_ACTION_NONE:
+
+		break;
+
+		case SPECIAL_ACTION_CARRY:
+
 		break;
 
 		case SPECIAL_ACTION_USEJETPACK:
+
 		break;
 	}
 }
@@ -460,7 +536,8 @@ void CLocalPlayer::SendOnFootFullSyncData()
 
 	ofSync.byteHealth = (uint8_t)m_pPlayerPed->GetHealth();
 	ofSync.byteArmour = (uint8_t)m_pPlayerPed->GetArmour();
-	ofSync.byteCurrentWeapon = 0;
+	//ofSync.byteCurrentWeapon = m_pPlayerPed->GetCurrentWeapon();
+	ofSync.byteCurrentWeapon = (uint8_t)m_pPlayerPed->GetCurrentWeapon();
 	ofSync.byteSpecialAction = 0;
 
 	ofSync.vecMoveSpeed.X = vecMoveSpeed.X;
@@ -582,7 +659,7 @@ void CLocalPlayer::SendPassengerFullSyncData()
 	psSync.byteSeatFlags = m_pPlayerPed->GetVehicleSeatID();
 	psSync.byteDriveBy = 0;//m_bPassengerDriveByMode;
 
-	psSync.byteCurrentWeapon = 0;//m_pPlayerPed->GetCurrentWeapon();
+	psSync.byteCurrentWeapon = m_pPlayerPed->GetCurrentWeapon();
 
 	m_pPlayerPed->GetMatrix(&mat);
 	psSync.vecPos.X = mat.pos.X;
@@ -604,6 +681,7 @@ void CLocalPlayer::SendPassengerFullSyncData()
 
 void CLocalPlayer::SendAimSyncData()
 {
+	// goodbye
 }
 
 void CLocalPlayer::ProcessSpectating()

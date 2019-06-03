@@ -53,6 +53,14 @@ extern int RPC_StopAudioStream;
 extern int RPC_ClickPlayer;
 extern int RPC_ClickTextDraw;
 extern int RPC_MapMarker;
+extern int RPC_ScrTextDrawSetString;
+
+
+extern int RPC_ScrShowActor;
+extern int RPC_ScrHideActor;
+extern int RPC_ScrSetActorFacingAngle;
+extern int RPC_ScrSetActorPos;
+extern int RPC_ScrSetActorHealth;
 
 extern int RPC_ScrSetSpawnInfo;
 extern int RPC_ScrSetPlayerTeam;
@@ -80,6 +88,7 @@ extern int RPC_ScrSetPlayerFacingAngle;
 extern int RPC_ScrResetMoney;
 extern int RPC_ScrResetPlayerWeapons;
 extern int RPC_ScrGivePlayerWeapon;
+extern int RPC_PlayerGiveTakeDamage;
 extern int RPC_ScrRespawnVehicle;
 extern int RPC_ScrLinkVehicle;
 extern int RPC_ScrSetPlayerArmour;
@@ -136,3 +145,6 @@ extern int RPC_ScrCreate3DTextLabel;
 extern int RPC_ScrUpdate3DTextLabel;
 extern int RPC_ScrVehicleParamsEx;
 extern int RPC_ScrInterpolateCamera;
+extern int RPC_ScrSetObjectMaterial;
+extern int RPC_ScrSetPlayerObjectMaterial;
+extern int RPC_ScrSetPlayerAttachedObject;

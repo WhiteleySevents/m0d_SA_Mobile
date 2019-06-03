@@ -58,6 +58,8 @@ int RPC_PlayerGiveTakeDamage = 115;
 int RPC_EnterEditObject = 27;
 int RPC_EditObject = 117;
 
+int RPC_ScrTextDrawSetString = 105;
+
 int RPC_ScrSetSpawnInfo = 68;
 int RPC_ScrSetPlayerTeam = 69;
 int RPC_ScrSetPlayerSkin = 153;
@@ -111,6 +113,9 @@ int RPC_ScrPlayerSpectateVehicle = 127;
 int RPC_ScrRemoveComponent = 57;
 int RPC_ScrForceSpawnSelection = 74;
 int RPC_ScrAttachObjectToPlayer = 75;
+
+int RPC_ScrSetPlayerAttachedObject = 113;
+
 int RPC_ScrInitMenu = 76;
 int RPC_ScrShowMenu = 77;
 int RPC_ScrHideMenu = 78;
@@ -125,6 +130,13 @@ int RPC_ScrStopFlashGangZone = 85;
 
 int RPC_ScrApplyPlayerAnimation = 86;
 int RPC_ScrClearPlayerAnimations = 87;
+
+int RPC_ScrShowActor = 171;
+int RPC_ScrHideActor = 172;
+int RPC_ScrSetActorFacingAngle = 175;
+int RPC_ScrSetActorPos = 176;
+int RPC_ScrSetActorHealth = 178;
+
 int RPC_ScrApplyActorAnimation = 173;
 int RPC_ScrClearActorAnimations = 174;
 
@@ -142,3 +154,5 @@ int RPC_ScrUpdate3DTextLabel = 58;
 //int RPC_ScrDestroy3DTextLabel = 
 int RPC_ScrVehicleParamsEx = 24;
 int RPC_ScrInterpolateCamera = 82;
+int RPC_ScrSetObjectMaterial = 84;
+int RPC_ScrSetPlayerObjectMaterial = 84;

@@ -10,15 +10,24 @@
 #include "keyboard.h"
 #include "debug.h"
 #include "settings.h"
+#include "modsa.h"
+#include "servers.h"
+#include <time.h>
+#include "sets.h"
 
-extern CChatWindow *pChatWindow;
+extern CModSAWindow *pModSAWindow;
+extern CServersWindow *pServersWindow;
+extern CSetsWindow *pSetsWindow;
+
 extern CSpawnScreen *pSpawnScreen;
 extern CPlayerTags *pPlayerTags;
 extern CDialogWindow *pDialogWindow;
 extern CDebug *pDebug;
+extern CChatWindow *pChatWindow;
 extern CSettings *pSettings;
 extern CKeyBoard *pKeyBoard;
 extern CNetGame *pNetGame;
+extern CGame *pGame;
 
 /* imgui_impl_renderware.h */
 void ImGui_ImplRenderWare_RenderDrawData(ImDrawData* draw_data);
@@ -58,9 +67,9 @@ CGUI::CGUI()
 
 	// setup style
 	ImGuiStyle& style = ImGui::GetStyle();
-	style.ScrollbarSize = ScaleY(55.0f);
+	style.ScrollbarSize = ScaleY(35.0f);
 	style.WindowBorderSize = 0.0f;
-	ImGui::StyleColorsDark();
+	ImGui::StyleColorsClassic();
 
 
 	// load fonts
@@ -98,20 +107,25 @@ void CGUI::Render()
 
 	RenderVersion();
 	//RenderRakNetStatistics();
+
 	if(pPlayerTags) pPlayerTags->Render();
 	
 	if(pNetGame && pNetGame->GetLabelPool())
 	{
 		pNetGame->GetLabelPool()->Draw();
 	}
-	
 	if(pChatWindow) pChatWindow->Render();
-
+	if(pModSAWindow) pModSAWindow->Render();
 	if(pDialogWindow) pDialogWindow->Render();
+
+	if(pServersWindow) pServersWindow->Render();
+	if(pSetsWindow) pSetsWindow->Render();
 
 	if(pSpawnScreen) pSpawnScreen->Render();
 	if(pKeyBoard) pKeyBoard->Render();
 
+	// removed (2)
+	
 	ImGui::EndFrame();
 	ImGui::Render();
 	ImGui_ImplRenderWare_RenderDrawData(ImGui::GetDrawData());
@@ -152,11 +166,28 @@ bool CGUI::OnTouchEvent(int type, bool multi, int x, int y)
 
 void CGUI::RenderVersion()
 {
-	return;
+   //char str[4096];
 
-	ImGui::GetOverlayDrawList()->AddText(
-		ImVec2(ScaleX(10), ScaleY(10)), 
-		ImColor(IM_COL32_BLACK), PORT_VERSION);
+   //sprintf(str, "m0d_SA s0beit v0.0.0.1 by QDS Team");
+
+	//ImGui::GetBackgroundDrawList()->AddText(
+	//	ImVec2(16.4, 691.4), 
+	//	ImColor(0,0,0,255), str);
+	//ImGui::GetBackgroundDrawList()->AddText(
+	//	ImVec2(16.4, 689.8), 
+	//	ImColor(0,0,0,255), str);
+//
+	//ImGui::GetBackgroundDrawList()->AddText(
+	//	ImVec2(14.8, 689.8), 
+	//	ImColor(0,0,0,255), str);
+	//ImGui::GetBackgroundDrawList()->AddText(
+	//	ImVec2(14.8, 691.4), 
+	//	ImColor(0,0,0,255), str);
+	//ImGui::GetBackgroundDrawList()->AddText(
+	//	ImVec2(15, 690), 
+	//	ImColor(246,119,0,255), str);
+
+	// minus palevo
 }
 
 void CGUI::RenderRakNetStatistics()
@@ -175,21 +206,21 @@ void CGUI::RenderText(ImVec2& posCur, ImU32 col, bool bOutline, const char* text
 	if(bOutline)
 	{
 		posCur.x -= iOffset;
-		ImGui::GetOverlayDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
+		ImGui::GetBackgroundDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
 		posCur.x += iOffset;
 		// right 
 		posCur.x += iOffset;
-		ImGui::GetOverlayDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
+		ImGui::GetBackgroundDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
 		posCur.x -= iOffset;
 		// above
 		posCur.y -= iOffset;
-		ImGui::GetOverlayDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
+		ImGui::GetBackgroundDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
 		posCur.y += iOffset;
 		// below
 		posCur.y += iOffset;
-		ImGui::GetOverlayDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
+		ImGui::GetBackgroundDrawList()->AddText(posCur, ImColor(IM_COL32_BLACK), text_begin, text_end);
 		posCur.y -= iOffset;
 	}
 
-	ImGui::GetOverlayDrawList()->AddText(posCur, col, text_begin, text_end);
+	ImGui::GetBackgroundDrawList()->AddText(posCur, col, text_begin, text_end);
 }

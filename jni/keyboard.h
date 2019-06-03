@@ -74,6 +74,7 @@ private:
 	std::vector<kbKey> m_Rows[3][4]; // eng, rus, num
 
 	std::string m_sInput;
+	int cl;
 	char m_utf8Input[MAX_INPUT_LEN*3 + 0xF];
 	int m_iInputOffset;
 

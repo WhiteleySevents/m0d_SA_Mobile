@@ -4,6 +4,8 @@
 #define DIALOG_STYLE_INPUT		1
 #define DIALOG_STYLE_LIST		2
 #define DIALOG_STYLE_PASSWORD	3
+#define DIALOG_STYLE_TABLIST	4
+#define DIALOG_STYLE_TABLIST_HEADERS	5
 
 class CDialogWindow
 {
@@ -13,6 +15,9 @@ public:
 
 	void Render();
 	void Clear();
+	void ShowListItems();
+	void ShowListInfo();
+	void GetListItemsCount();
 	void Show(bool bShow);
 	void SetInfo(char* szInfo, int length);
 
@@ -30,4 +35,6 @@ public:
 
 	float		m_fSizeX;
 	float 		m_fSizeY;
+
+	int m_bSL;
 };

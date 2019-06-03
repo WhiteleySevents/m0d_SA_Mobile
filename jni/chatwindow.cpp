@@ -5,10 +5,14 @@
 #include "settings.h"
 #include "game/game.h"
 #include "net/netgame.h"
+#include "dialog.h"
+#include "modsa.h"
 
 extern CGUI *pGUI;
 extern CKeyBoard *pKeyBoard;
 extern CSettings *pSettings;
+extern CDialogWindow *pDialogWindow;
+extern CModSAWindow *pModSAWindow;
 extern CNetGame *pNetGame;
 
 void ChatWindowInputHandler(const char* str)
@@ -28,8 +32,8 @@ CChatWindow::CChatWindow()
 	Log("Initializng Chat Window..");
 	m_fChatPosX = pGUI->ScaleX( pSettings->Get().fChatPosX );
 	m_fChatPosY = pGUI->ScaleY( pSettings->Get().fChatPosY );
-	m_fChatSizeX = pGUI->ScaleX( pSettings->Get().fChatSizeX );
-	m_fChatSizeY = pGUI->ScaleY( pSettings->Get().fChatSizeY );
+	m_fChatSizeX = pGUI->ScaleX( pSettings->Get().fChatSizeX + 3.5 );
+	m_fChatSizeY = pGUI->ScaleY( pSettings->Get().fChatSizeY + 1.5 );
 	m_iMaxMessages = pSettings->Get().iChatMaxMessages;
 	Log("Chat pos: %f, %f, size: %f, %f", m_fChatPosX, m_fChatPosY, m_fChatSizeX, m_fChatSizeY);
 
@@ -73,9 +77,13 @@ bool CChatWindow::OnTouchEvent(int type, bool multi, int x, int y)
 
 void CChatWindow::Render()
 {
+	//if(pDialogWindow->m_bIsActive)return;
+	//if(pModSAWindow->m_bIsActive)return;
+
+	
 	if(pSettings->Get().bDebug)
 	{
-		ImGui::GetOverlayDrawList()->AddRect(
+		ImGui::GetBackgroundDrawList()->AddRect(
 			ImVec2(m_fChatPosX, m_fChatPosY), 
 			ImVec2(	m_fChatPosX + m_fChatSizeX, m_fChatPosY + m_fChatSizeY), 
 			IM_COL32_BLACK);

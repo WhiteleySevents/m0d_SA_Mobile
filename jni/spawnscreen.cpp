@@ -43,12 +43,12 @@ void CSpawnScreen::Render()
 	{
 		pLocalPlayer->SendPrevClass();
 	}
-	ImGui::SameLine(0, 0);
+	ImGui::SameLine(0, 5);
 	if (ImGui::Button("Spawn", ImVec2(m_fButWidth, m_fButHeight)))
 	{
 		pLocalPlayer->SendSpawn();
 	}
-	ImGui::SameLine(0, 0);
+	ImGui::SameLine(0, 5);
 	if (ImGui::Button(">>", ImVec2(m_fButWidth, m_fButHeight)))
 	{
 		pLocalPlayer->SendNextClass();

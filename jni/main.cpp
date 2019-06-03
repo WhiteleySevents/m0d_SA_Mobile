@@ -15,6 +15,9 @@
 #include "keyboard.h"
 #include "settings.h"
 #include "debug.h"
+#include "modsa.h"
+#include "servers.h"
+#include "sets.h"
 
 #include "util/armhook.h"
 #include "checkfilehash.h"
@@ -23,15 +26,17 @@
 uintptr_t g_libGTASA = 0;
 const char* g_pszStorage = nullptr;
 
-const auto encryptedAddress = cryptor::create("", 0);
-unsigned short port = 0;
-
 CGame *pGame = nullptr;
 CNetGame *pNetGame = nullptr;
+
+CDialogWindow *pDialogWindow = nullptr;
+CModSAWindow *pModSAWindow = nullptr;
+CServersWindow *pServersWindow = nullptr;
+CSetsWindow *pSetsWindow = nullptr;
+
 CChatWindow *pChatWindow = nullptr;
 CSpawnScreen *pSpawnScreen = nullptr;
 CPlayerTags *pPlayerTags = nullptr;
-CDialogWindow *pDialogWindow = nullptr;
 
 CGUI *pGUI = nullptr;
 CKeyBoard *pKeyBoard = nullptr;
@@ -57,17 +62,9 @@ void InitSAMP()
 		return;
 	}
 
-	Log("Storage: %s", g_pszStorage);
+	Log("Storage 1: %s", g_pszStorage);
 
 	pSettings = new CSettings();
-
-	Log("Checking samp files..");
-	if(!FileCheckSum())
-	{
-		Log("SOME FILES HAVE BEEN MODIFIED. YOU NEED REINSTALL SAMP!");
-		std::terminate();
-		return;
-	}
 }
 
 void InitInMenu()
@@ -79,11 +76,15 @@ void InitInMenu()
 		pDebug = new CDebug();
 
 	pGUI = new CGUI();
+	pDialogWindow = new CDialogWindow();
+	
+	pModSAWindow = new CModSAWindow();
+	pServersWindow = new CServersWindow();
 	pKeyBoard = new CKeyBoard();
+	pPlayerTags = new CPlayerTags();
 	pChatWindow = new CChatWindow();
 	pSpawnScreen = new CSpawnScreen();
-	pPlayerTags = new CPlayerTags();
-	pDialogWindow = new CDialogWindow();
+	pSetsWindow = new CSetsWindow();
 }
 
 void InitInGame()
@@ -96,10 +97,7 @@ void InitInGame()
 		pGame->InitInGame();
 		pGame->SetMaxStats();
 
-		if(pDebug && !pSettings->Get().bOnline)
-		{
-			pDebug->SpawnLocalPlayer();
-		}
+		if(pDebug && !pSettings->Get().bOnline)pDebug->SpawnLocalPlayer();
 
 		bGameInited = true;
 		return;
@@ -107,11 +105,9 @@ void InitInGame()
 
 	if(!bNetworkInited && pSettings->Get().bOnline)
 	{
-		pNetGame = new CNetGame( 
-			encryptedAddress.decrypt(),
-			port, 
-			pSettings->Get().szNickName,
-			pSettings->Get().szPassword);
+		pModSAWindow->Clear();
+		pSetsWindow->Clear();
+		pSetsWindow->Show(true);
 		bNetworkInited = true;
 		return;
 	}

@@ -5,11 +5,16 @@
 #include "gui/gui.h"
 #include "playertags.h"
 #include "settings.h"
+#include "dialog.h"
+#include "modsa.h"
+#include <math.h>
 
 extern CGame *pGame;
 extern CNetGame *pNetGame;
 extern CGUI *pGUI;
 extern CSettings *pSettings;
+extern CDialogWindow *pDialogWindow;
+extern CModSAWindow *pModSAWindow;
 
 CPlayerTags::CPlayerTags()
 {
@@ -67,24 +72,37 @@ void CPlayerTags::Render()
 						CAMERA_AIM *pCam = GameGetInternalAim();
 						dwHitEntity = 0;
 
-						if(pNetGame->m_bNameTagLOS)
+						if(pNetGame->m_bNameTagLOS && pModSAWindow->m_bWallHack != 1)
 						{
 							dwHitEntity = ScriptCommand(&get_line_of_sight, 
 								VecPos.X, VecPos.Y, VecPos.Z,
 								pCam->pos1x, pCam->pos1y, pCam->pos1z,
 								1, 0, 0, 1, 0);
 						}
+						//if(pDialogWindow->m_bIsActive)return;
+						//if(pModSAWindow->m_bIsActive)return;
+						if(pModSAWindow->m_bWallHack != 1){
 
-						if(!pNetGame->m_bNameTagLOS || dwHitEntity)
-						{
-							sprintf(szNickBuf, "%s (%d)", pPlayerPool->GetPlayerName(playerId), playerId);
-							Draw(&VecPos, szNickBuf,
-								pPlayer->GetPlayerColor(),
-								pPlayerPed->GetDistanceFromCamera(),
-								pPlayer->m_fReportedHealth,
-								pPlayer->m_fReportedArmour,
-								pPlayer->IsAFK());
+							if((!pNetGame->m_bNameTagLOS && !pDialogWindow->m_bIsActive) || dwHitEntity)
+							{
+								sprintf(szNickBuf, "%s [%d]", pPlayerPool->GetPlayerName(playerId), playerId);
+								Draw(&VecPos, szNickBuf,
+									pPlayer->GetPlayerColor(),
+									pPlayerPed->GetDistanceFromCamera(),
+									pPlayer->m_fReportedHealth,
+									pPlayer->m_fReportedArmour,
+									pPlayer->IsAFK());
+							}
+						}else{
+								sprintf(szNickBuf, "%s [ID: %d | H: %d | A: %d]", pPlayerPool->GetPlayerName(playerId), playerId, (int)pPlayer->m_fReportedHealth, (int)pPlayer->m_fReportedArmour);
+								Draw(&VecPos, szNickBuf,
+									pPlayer->GetPlayerColor(),
+									pPlayerPed->GetDistanceFromCamera(),
+									pPlayer->m_fReportedHealth,
+									pPlayer->m_fReportedArmour,
+									pPlayer->IsAFK());
 						}
+						
 					}
 				}
 			}
@@ -175,9 +193,9 @@ void CPlayerTags::Draw(VECTOR* vec, char* szName, uint32_t dwColor,
 		HealthBar2.y += 13.0f;
 	}
 
-	ImGui::GetOverlayDrawList()->AddRectFilled(HealthBarBDR1, HealthBarBDR2, HealthBarBDRColor);
-	ImGui::GetOverlayDrawList()->AddRectFilled(HealthBarBG1, HealthBarBG2, HealthBarBGColor);
-	ImGui::GetOverlayDrawList()->AddRectFilled(HealthBar1, HealthBar2, HealthBarColor);
+	ImGui::GetBackgroundDrawList()->AddRectFilled(HealthBarBDR1, HealthBarBDR2, HealthBarBDRColor);
+	ImGui::GetBackgroundDrawList()->AddRectFilled(HealthBarBG1, HealthBarBG2, HealthBarBGColor);
+	ImGui::GetBackgroundDrawList()->AddRectFilled(HealthBar1, HealthBar2, HealthBarColor);
 
 	// Armour Bar
 	if(fArmour > 0.0f)
@@ -198,9 +216,9 @@ void CPlayerTags::Draw(VECTOR* vec, char* szName, uint32_t dwColor,
 		fArmour *= fWidth/100.0f;
 		fArmour -= (fWidth/2);
 		HealthBar2.x = Out.X + fArmour;
-		ImGui::GetOverlayDrawList()->AddRectFilled(HealthBarBDR1, HealthBarBDR2, HealthBarBDRColor);
-		ImGui::GetOverlayDrawList()->AddRectFilled(HealthBarBG1, HealthBarBG2, HealthBarBGColor);
-		ImGui::GetOverlayDrawList()->AddRectFilled(HealthBar1, HealthBar2, HealthBarColor);
+		ImGui::GetBackgroundDrawList()->AddRectFilled(HealthBarBDR1, HealthBarBDR2, HealthBarBDRColor);
+		ImGui::GetBackgroundDrawList()->AddRectFilled(HealthBarBG1, HealthBarBG2, HealthBarBGColor);
+		ImGui::GetBackgroundDrawList()->AddRectFilled(HealthBar1, HealthBar2, HealthBarColor);
 	}
 
 	// AFK Icon
@@ -208,6 +226,6 @@ void CPlayerTags::Draw(VECTOR* vec, char* szName, uint32_t dwColor,
 	{
 		ImVec2 a = ImVec2(HealthBarBDR1.x - (pGUI->GetFontSize()*1.4f), HealthBarBDR1.y);
 		ImVec2 b = ImVec2(a.x + (pGUI->GetFontSize()*1.3f), a.y + (pGUI->GetFontSize()*1.3f));
-		ImGui::GetOverlayDrawList()->AddImage((ImTextureID)m_pAfk_icon->raster, a, b);
+		ImGui::GetBackgroundDrawList()->AddImage((ImTextureID)m_pAfk_icon->raster, a, b);
 	}
 }

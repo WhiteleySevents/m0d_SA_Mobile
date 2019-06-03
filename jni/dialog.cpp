@@ -6,11 +6,14 @@
 #include "vendor/imgui/imgui_internal.h"
 #include "keyboard.h"
 #include <stdlib.h>
+#include <string.h>
+#include "modsa.h"
 
 extern CGUI *pGUI;
 extern CGame *pGame;
 extern CNetGame *pNetGame;
 extern CKeyBoard *pKeyBoard;
+extern CModSAWindow *pModSAWindow;
 
 char szDialogInputBuffer[100];
 char utf8DialogInputBuffer[100*3];
@@ -20,6 +23,7 @@ CDialogWindow::CDialogWindow()
 	m_bIsActive = false;
 	m_putf8Info = nullptr;
 	m_pszInfo = nullptr;
+	if(m_bSL != 1)m_bSL = 0;
 }
 
 CDialogWindow::~CDialogWindow()
@@ -29,8 +33,9 @@ CDialogWindow::~CDialogWindow()
 
 void CDialogWindow::Show(bool bShow)
 {
+	if(pModSAWindow->m_bSD == 1)return;
 	if(pGame) 
-		pGame->FindPlayerPed()->TogglePlayerControllable(!bShow);
+		pGame->FindPlayerPed()->TogglePlayerControllableWithoutLock(!bShow);
 
 	m_bIsActive = bShow;
 }
@@ -195,51 +200,252 @@ void DialogWindowInputHandler(const char* str)
 	cp1251_to_utf8(utf8DialogInputBuffer, str);
 }
 
+// what a fuck is it?! ldev fuck u
+// OMG, ok... todo: rewrite list
+
+void CDialogWindow::ShowListItems(){
+	char bufString[4096];
+    strcpy(bufString, m_putf8Info);
+    char *str = bufString;
+    char *pch;
+    int i = -1;
+    pch = strtok (str, "\n");
+    while (pch != NULL)
+    {
+        i++;
+        char ifdd[16] = "%d. %s";
+        sprintf(ifdd, "%d. %s", i + 1, pch);
+        TextWithColors(ifdd);
+
+        if(i == NULL && ImGui::Button("Item #1", ImVec2(350, 50)))
+        {
+            Show(false);
+            char enss[16] = "Item %d";
+            sprintf(enss, "Item %d", i);
+            if(pNetGame)
+                pNetGame->SendDialogResponse(m_wDialogID, 1, i, enss);
+        }
+       	char item_id[16] = "Item #%d";
+        sprintf(item_id, "Item #%d", i + 1);
+        if(i != NULL && ImGui::Button(item_id, ImVec2(350, 50)))
+        {
+            Show(false);
+            char enss[16] = "%d";
+            sprintf(enss, "%d", i);
+            if(pNetGame)
+                pNetGame->SendDialogResponse(m_wDialogID, 1, i, enss);
+        }
+    pch = strtok (NULL, "\n");
+    }
+}
+
+void CDialogWindow::ShowListInfo(){
+	char bufString[4096];
+    strcpy(bufString, m_putf8Info);
+    char *str = bufString;
+    char *pch;
+    int i = -1;
+    pch = strtok (str, "\n");
+    while (pch != NULL)
+    {
+        i++;
+        if(i > 8)m_bSL = 1;
+        if(i <= 8)m_bSL = 0;
+        TextWithColors(pch);
+   		pch = strtok (NULL, "\n");
+    }
+}
+
+void CDialogWindow::GetListItemsCount(){
+	char bufString[4096];
+    strcpy(bufString, m_putf8Info);
+    char *str = bufString;
+    char *pch;
+    int i = -1;
+    pch = strtok (str, "\n");
+    while (pch != NULL)
+    {
+        i++;
+        if(i > 8)m_bSL = 1;
+        if(i <= 8)m_bSL = 0;
+   		pch = strtok (NULL, "\n");
+    }
+}
+
+// omg..
+// todo: rewrite render
+
 void CDialogWindow::Render()
 {
 	if(!m_bIsActive || !m_putf8Info) return;
 
 	ImGuiIO &io = ImGui::GetIO();
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(pGUI->GetFontSize(), pGUI->GetFontSize()));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8,8));
 
 	ImGui::Begin(m_utf8Title, nullptr, 
-		ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize);
 
 	switch(m_byteDialogStyle)
 	{
 		case DIALOG_STYLE_MSGBOX:
 		TextWithColors(m_putf8Info);
-		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2) );
+		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 50) );
+		break;
+
+		case DIALOG_STYLE_PASSWORD:
+		TextWithColors(m_putf8Info);
+		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 10) );
+		if( ImGui::Button(utf8DialogInputBuffer, ImVec2(555, 45) ))
+		{
+			if(!pKeyBoard->IsOpen())
+				pKeyBoard->Open(&DialogWindowInputHandler);
+		}
+		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 5) );
+		break;
+
+		case DIALOG_STYLE_LIST:
+		GetListItemsCount();
+
+		if(m_bSL != 1){
+			ImGui::SetCursorPosY(36.75);
+			if(ImGui::BeginChild("listinfo", ImVec2(425, ImGui::GetWindowHeight() / 2 + 67.5), true, 
+				ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)){
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(7, 7));
+				ImGui::Begin("listitems", nullptr, 
+					ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+				ShowListItems();
+				ImGui::SetWindowSize(ImVec2(-1, -1));
+				ImVec2 size = ImGui::GetWindowSize();
+				ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2) + 435, ((io.DisplaySize.y - size.y)/2)) );
+				ImGui::End();
+			}
+			ShowListInfo();
+			ImGui::ItemSize( ImVec2(285, 155) );
+			ImGui::EndChild();
+		}else{
+			ImGui::SetCursorPosY(36.75);
+			if(ImGui::BeginChild("listinfo", ImVec2(425, ImGui::GetWindowHeight() / 2 + 67.5), true, 
+				ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)){
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(7, 7));
+				ImGui::Begin("listitems", nullptr, 
+					ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+				ShowListItems();
+				ImGui::SetWindowSize(ImVec2(-1, -1));
+				ImVec2 size = ImGui::GetWindowSize();
+				ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2) + 435, ((io.DisplaySize.y - size.y)/2)) );
+				ImGui::End();
+			}
+			ShowListInfo();
+			ImGui::ItemSize( ImVec2(285, 155) );
+			ImGui::EndChild();
+		}
+		break;
+
+		case DIALOG_STYLE_TABLIST:
+		GetListItemsCount();
+
+		if(m_bSL != 1){
+			ImGui::SetCursorPosY(36.75);
+			if(ImGui::BeginChild("listinfo", ImVec2(425, ImGui::GetWindowHeight() / 2 + 67.5), true, 
+				ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)){
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(7, 7));
+				ImGui::Begin("listitems", nullptr, 
+					ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+				ShowListItems();
+				ImGui::SetWindowSize(ImVec2(-1, -1));
+				ImVec2 size = ImGui::GetWindowSize();
+				ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2) + 435, ((io.DisplaySize.y - size.y)/2)) );
+				ImGui::End();
+			}
+			ShowListInfo();
+			ImGui::ItemSize( ImVec2(285, 155) );
+			ImGui::EndChild();
+		}else{
+			ImGui::SetCursorPosY(36.75);
+			if(ImGui::BeginChild("listinfo", ImVec2(425, ImGui::GetWindowHeight() / 2 + 67.5), true, 
+				ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)){
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(7, 7));
+				ImGui::Begin("listitems", nullptr, 
+					ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+				ShowListItems();
+				ImGui::SetWindowSize(ImVec2(-1, -1));
+				ImVec2 size = ImGui::GetWindowSize();
+				ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2) + 435, ((io.DisplaySize.y - size.y)/2)) );
+				ImGui::End();
+			}
+			ShowListInfo();
+			ImGui::ItemSize( ImVec2(285, 155) );
+			ImGui::EndChild();
+		}
+		break;
+
+		case DIALOG_STYLE_TABLIST_HEADERS:
+		GetListItemsCount();
+
+		if(m_bSL != 1){
+			ImGui::SetCursorPosY(36.75);
+			if(ImGui::BeginChild("listinfo", ImVec2(425, ImGui::GetWindowHeight() / 2 + 67.5), true, 
+				ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)){
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(7, 7));
+				ImGui::Begin("listitems", nullptr, 
+					ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+				ShowListItems();
+				ImGui::SetWindowSize(ImVec2(-1, -1));
+				ImVec2 size = ImGui::GetWindowSize();
+				ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2) + 435, ((io.DisplaySize.y - size.y)/2)) );
+				ImGui::End();
+			}
+			ShowListInfo();
+			ImGui::ItemSize( ImVec2(285, 155) );
+			ImGui::EndChild();
+		}else{
+			ImGui::SetCursorPosY(36.75);
+			if(ImGui::BeginChild("listinfo", ImVec2(425, ImGui::GetWindowHeight() / 2 + 67.5), true, 
+				ImGuiWindowFlags_AlwaysUseWindowPadding | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_AlwaysAutoResize)){
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(7, 7));
+				ImGui::Begin("listitems", nullptr, 
+					ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoMove);
+				ShowListItems();
+				ImGui::SetWindowSize(ImVec2(-1, -1));
+				ImVec2 size = ImGui::GetWindowSize();
+				ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2) + 435, ((io.DisplaySize.y - size.y)/2)) );
+				ImGui::End();
+			}
+			ShowListInfo();
+			ImGui::ItemSize( ImVec2(285, 155) );
+			ImGui::EndChild();
+		}
 		break;
 
 		case DIALOG_STYLE_INPUT:
 		TextWithColors(m_putf8Info);
-		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2) );
-
-		if( ImGui::Button(utf8DialogInputBuffer, ImVec2(ImGui::CalcTextSize(m_pszInfo).x, pGUI->GetFontSize() * 1.5f)) )
+		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 10) );
+		
+		if( ImGui::Button(utf8DialogInputBuffer, ImVec2(555, 48) ))
 		{
 			if(!pKeyBoard->IsOpen())
 				pKeyBoard->Open(&DialogWindowInputHandler);
 		}
 
-		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2) );
+		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 5) );
 		break;
 	}
 
+	ImGui::SetCursorPosX((ImGui::GetWindowWidth() - 278 + ImGui::GetStyle().ItemSpacing.x) / 2);
 	if(m_utf8Button1[0] != 0) 
 	{
-		if(ImGui::Button(m_utf8Button1, ImVec2(ImGui::CalcTextSize(m_utf8Button1).x * 1.5f, pGUI->GetFontSize() * 2)))
+		if(ImGui::Button(m_utf8Button1, ImVec2(125, 50)))
 		{
 			Show(false);
 			if(pNetGame) 
-				pNetGame->SendDialogResponse(m_wDialogID, 1, -1, szDialogInputBuffer);
+				pNetGame->SendDialogResponse(m_wDialogID, 1, 0, szDialogInputBuffer);
 		}
 	}
 	ImGui::SameLine(0, pGUI->GetFontSize());
 	if(m_utf8Button2[0] != 0) 
 	{
-		if(ImGui::Button(m_utf8Button2, ImVec2(ImGui::CalcTextSize(m_utf8Button2).x * 1.5f, pGUI->GetFontSize() * 2)))
+		if(ImGui::Button(m_utf8Button2, ImVec2(125,50)))
 		{
 			Show(false);
 			if(pNetGame) 
@@ -247,7 +453,6 @@ void CDialogWindow::Render()
 		}
 	}
 
-	// Размешаем по центру
 	ImGui::SetWindowSize(ImVec2(-1, -1));
 	ImVec2 size = ImGui::GetWindowSize();
 	ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2), ((io.DisplaySize.y - size.y)/2)) );

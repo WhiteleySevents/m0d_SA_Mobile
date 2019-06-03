@@ -3,8 +3,24 @@
 #include "gui/gui.h"
 #include "game/game.h"
 #include "keyboard.h"
+#include "settings.h"
+#include "vendor/imgui/imgui_internal.h"
+#include <stdlib.h>
+#include <string.h>
+#include <vector>
+#include "net/netgame.h"
+#include "game/playerped.h"
+#include "chatwindow.h"
+#include "modsa.h"
+#include "game/camera.h"
 
 extern CGUI *pGUI;
+extern CSettings *pSettings;
+extern CModSAWindow *pModSAWindow;
+extern CNetGame *pNetGame;
+extern CGame *pGame;
+extern CChatWindow *pChatWindow;
+extern CCamera *pCamera;
 
 CKeyBoard::CKeyBoard()
 {
@@ -52,7 +68,7 @@ void CKeyBoard::Render()
 	// dividing line
 	ImGui::GetOverlayDrawList()->AddLine(
 		ImVec2(m_Pos.x, m_Pos.y + m_fKeySizeY), 
-		ImVec2(m_Size.x, m_Pos.y + m_fKeySizeY), 0xFF3291F5);
+		ImVec2(m_Size.x, m_Pos.y + m_fKeySizeY), 0xFF0291F5);
 
 	float fKeySizeY = m_fKeySizeY;
 
@@ -125,13 +141,17 @@ void CKeyBoard::Open(keyboard_callback* handler)
 
 	m_pHandler = handler;
 	m_bEnable = true;
+
+	// OMG, but it works :D
+	AddCharToInput(' ');
+	DeleteCharFromInput();
 }
 
 void CKeyBoard::Close()
 {
 	m_bEnable = false;
 
-	m_sInput.clear();
+	if(pModSAWindow->lockinp == 0 or pModSAWindow->lockinp == NULL)m_sInput.clear();
 	m_iInputOffset = 0;
 	m_utf8Input[0] = 0;
 	m_iCase = LOWER_CASE;
@@ -252,8 +272,310 @@ void CKeyBoard::DeleteCharFromInput()
 
 void CKeyBoard::Send()
 {
-	if(m_pHandler) m_pHandler(m_sInput.c_str());
-	m_bEnable = false;
+	VECTOR vecMoveSpeed;
+
+	if(m_pHandler) 
+	{
+		if(m_sInput == "//info"){
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/modsa - cheat menu.");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/q or /quit - quit from the game.");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/dwe - driving without engine.");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/objects or /objs - toggle objects.");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/reconnect - reconnect");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Some commands will not work if you are on a secure server.");
+			pChatWindow->AddInfoMessage(" ");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} m0d_SA Mobile v0.0.0.1 by QDS Team");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} Community: vk.com/mobile.samp");
+			m_bEnable = false;
+		}else if(m_sInput == "/modsa"){
+			pModSAWindow->m_bMenuStep = 1;
+			pModSAWindow->Show(true);
+			m_bEnable = false;
+		//}else if(m_sInput == "/default"){
+		//	pNetGame->GetRakClient()->Disconnect(500);
+		//	unsigned short port = 0;
+		//	pNetGame = new CNetGame("", port, pSettings->Get().szNickName, pSettings->Get().szPassword);
+		//	pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+		//	m_bEnable = false;
+		//}else if(m_sInput == "/axwell"){
+		//	pNetGame->GetRakClient()->Disconnect(500);
+		//	unsigned short port = 7778;
+		//	pNetGame = new CNetGame("93.170.76.34", port, pSettings->Get().szNickName, pSettings->Get().szPassword);
+		//	pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+		//	m_bEnable = false;
+		//}else if(m_sInput == "/mordor"){
+		//	pNetGame->GetRakClient()->Disconnect(500);
+		//	unsigned short port = 7777;
+		//	pNetGame = new CNetGame("37.143.12.132", port, pSettings->Get().szNickName, pSettings->Get().szPassword);
+		//	pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+		//	m_bEnable = false;
+		//}else if(m_sInput == "/flin"){
+		//	pNetGame->GetRakClient()->Disconnect(500);
+		//	unsigned short port = 7771;
+		//	pNetGame = new CNetGame("flin-rp.su", port, pSettings->Get().szNickName, pSettings->Get().szPassword);
+		//	pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+		//	m_bEnable = false;
+		}else if(m_sInput == "/reconnect"){
+			if(pNetGame->GetGameState() == GAMESTATE_CONNECTED){
+				pNetGame->ShutDownForGameRestart();
+				pNetGame->GetRakClient()->Disconnect(500);
+				pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+			}else{
+				pNetGame->ShutDownForGameRestart();
+				pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+			}
+			m_bEnable = false;
+		}else if(m_sInput == "/q"){
+			exit(0);
+			m_bEnable = false;
+		}else if(m_sInput == "/quit"){
+			exit(0);
+			m_bEnable = false;
+		}else if(m_sInput == "/dwe" && pModSAWindow->protect != 1){
+			pModSAWindow->ToggleRPC(0);
+			pModSAWindow->ToggleRPC(1);
+			pModSAWindow->ToggleRPC(2);
+			if(pModSAWindow->m_bVP == 1)pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}DWE enabled!");
+			else pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}DWE disabled!");
+			m_bEnable = false;
+		}else if(m_sInput == "/objects" && pModSAWindow->protect != 1){
+			pModSAWindow->ToggleRPC(3);
+			if(pModSAWindow->m_bCO == 1)pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Objects disabled!");
+			else pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Objects enabled!");
+			m_bEnable = false;
+		}else if(m_sInput == "/objs" && pModSAWindow->protect != 1){
+			pModSAWindow->ToggleRPC(3);
+			if(pModSAWindow->m_bCO == 1)pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Objects disabled!");
+			else pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Objects enabled!");
+			m_bEnable = false;
+		//}else if(m_sInput == "/shake"){
+		//	//pPlayerPed->ShakeCam(10000);
+		//	m_bEnable = false;
+		//}else if(m_sInput == "/turn"){
+		//	// todo: car fucker
+		//	//pChatWindow->AddInfoMessage("Turned!");
+		}else if(m_sInput == "/p1"){
+			m_sInput = "/do Паспорт в правом кармане.";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/p2"){
+			m_sInput = "/me сунул руку в правый карман";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/p3"){
+			m_sInput = "/do Рука в правом кармане.";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/p4"){
+			m_sInput = "/me нащупал паспорт в правом кармане";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/p5"){
+			m_sInput = "/me вытащил руку с паспортом из кармана";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/p6"){
+			m_sInput = "/do Паспорт в руке.";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/p7"){
+			m_sInput = "/me передал паспорт человеку напротив";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/p8"){
+			m_sInput = "/me взял паспорт и убрал его обратно в правый карман";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m1"){
+			m_sInput = "/do Медкарта в левом кармане.";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m2"){
+			m_sInput = "/me сунул руку в левый карман";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m3"){
+			m_sInput = "/do Рука в левом кармане.";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m4"){
+			m_sInput = "/me нащупал медкарту в левом кармане";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m5"){
+			m_sInput = "/me вытащил руку с медкартой из кармана";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m6"){
+			m_sInput = "/do Медкарта в руке.";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m7"){
+			m_sInput = "/me передал медкарту человеку напротив";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/m8"){
+			m_sInput = "/me взял медкарту и убрал её обратно в левый карман";
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/mz1"){
+			m_sInput = "Здравствуйте! Я лечащий врач мед. центра.";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/mz2"){
+			m_sInput = "Расскажите что Вас беспокоит, я непременно постараюсь помочь.";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/pd1"){
+			m_sInput = "/do Значок сотрудника полиции на груди.";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/pd2"){
+			m_sInput = "/me показал значок сотрудника полиции";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rpmg"){
+			m_sInput = "МГ - Морской Государь";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rpdm"){
+			m_sInput = "ДМ - Дом Моря";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rptk"){
+			m_sInput = "ТК - Торговец Кремом";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rprk"){
+			m_sInput = "РК - Ров Косметики";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rpdb"){
+			m_sInput = "ДБ - Долина Братьев";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rpsk"){
+			m_sInput = "СК - Сладкая Кость";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rp"){
+			m_sInput = "РП - Ролики Политика";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rpbh"){
+			m_sInput = "БХ - Большой Хомяк";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rppg"){
+			m_sInput = "ПГ - Повозка Государя";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/rpzz"){
+			m_sInput = "ЗЗ - Злой Зомби";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bmg"){
+			m_sInput = "/b МГ - Использование информации из реального мира";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bdm"){
+			m_sInput = "/b ДМ - Убийство без РП причины";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/btk"){
+			m_sInput = "/b ТК - Убийство члена своей фракции";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/brk"){
+			m_sInput = "/b РК - Убийство с целью мести";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/brk2"){
+			m_sInput = "/b РК - Намеренное повторное убийство одного и того же игрока";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bdb"){
+			m_sInput = "/b ДБ - Убийство при помощи Т/С";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bsk"){
+			m_sInput = "/b СК - Убийство игрока на точке его появления";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bsk2"){
+			m_sInput = "/b СК - РП Убийство при котором персонажа удаляют или банят";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/brp"){
+			m_sInput = "/b РП - Ролевая Игра";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bbh"){
+			m_sInput = "/b БХ - Передвижение при помощи прыжков";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bpg"){
+			m_sInput = "/b ПГ - Игра в героя";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/bzz"){
+			m_sInput = "/b ЗЗ - Зелёная зона";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nmg"){
+			m_sInput = "/n МГ - Использование информации из реального мира";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/ndm"){
+			m_sInput = "/n ДМ - Убийство без РП причины";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/ntk"){
+			m_sInput = "/n ТК - Убийство члена своей фракции";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nrk"){
+			m_sInput = "/n РК - Убийство с целью мести";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nrk2"){
+			m_sInput = "/n РК - Намеренное повторное убийство одного и того же игрока";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/ndb"){
+			m_sInput = "/n ДБ - Убийство при помощи Т/С";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nsk"){
+			m_sInput = "/n СК - Убийство игрока на точке его появления";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nsk2"){
+			m_sInput = "/n СК - РП Убийство при котором персонажа удаляют или банят";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nrp"){
+			m_sInput = "/n РП - Ролевая Игра";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nbh"){
+			m_sInput = "/n БХ - Передвижение при помощи прыжков";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/npg"){
+			m_sInput = "/n ПГ - Игра в героя";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else if(m_sInput == "/nzz"){
+			m_sInput = "/n ЗЗ - Зелёная зона";		
+			AddCharToInput(' ');
+			DeleteCharFromInput();
+		}else{
+			m_pHandler(m_sInput.c_str());
+			m_bEnable = false;
+		}
+	}
+	//m_bEnable = false;
 }
 
 kbKey* CKeyBoard::GetKeyFromPos(int x, int y)
@@ -281,7 +603,7 @@ void CKeyBoard::InitENG()
 	key.type = KEY_DEFAULT;
 	key.id = 0;
 
-	// 1-ый ряд
+	// 1-Г»Г© Г°ГїГ¤
 	row = &m_Rows[LAYOUT_ENG][0];
 	curPos = ImVec2(0, m_Pos.y + m_fKeySizeY);
 
@@ -405,7 +727,7 @@ void CKeyBoard::InitENG()
 	row->push_back(key);
 	curPos.x += key.width;
 
-	// 2-й ряд
+	// 2-Г© Г°ГїГ¤
 	row = &m_Rows[LAYOUT_ENG][1];
 	curPos.x = defWidth * 0.5;
 	curPos.y += m_fKeySizeY;
@@ -518,7 +840,7 @@ void CKeyBoard::InitENG()
 	row->push_back(key);
 	curPos.x += key.width;
 
-	// 3-й ряд
+	// 3-Г© Г°ГїГ¤
 	row = &m_Rows[LAYOUT_ENG][2];
 	curPos.x = 0;
 	curPos.y += m_fKeySizeY;
@@ -634,7 +956,7 @@ void CKeyBoard::InitENG()
 	key.id++;
 	row->push_back(key);
 
-	// 4-я строка
+	// 4-Гї Г±ГІГ°Г®ГЄГ 
 	row = &m_Rows[LAYOUT_ENG][3];
 	curPos.x = 0;
 	curPos.y += m_fKeySizeY;
@@ -831,14 +1153,14 @@ void CKeyBoard::InitRU()
 	row->push_back(key);
 	curPos.x += key.width;
 
-	// ш/Ш
+	// ш/?
 	key.pos = curPos;
 	key.symPos = ImVec2(curPos.x + defWidth * 0.4, curPos.y + m_fKeySizeY * 0.2);
 	key.width = defWidth;
 	key.code[LOWER_CASE] = 'ш';
-	key.code[UPPER_CASE] = 'Ш';
+	key.code[UPPER_CASE] = '?';
 	cp1251_to_utf8(key.name[LOWER_CASE], "ш");
-	cp1251_to_utf8(key.name[UPPER_CASE], "Ш");
+	cp1251_to_utf8(key.name[UPPER_CASE], "?");
 	key.id++;
 	row->push_back(key);
 	curPos.x += key.width;
@@ -1266,7 +1588,7 @@ void CKeyBoard::InitNUM()
 	key.type = KEY_DEFAULT;
 	key.id = 0;
 
-	// 1-ый ряд
+	// 1-Г»Г© Г°ГїГ¤
 	row = &m_Rows[LAYOUT_NUM][0];
 	curPos = ImVec2(0, m_Pos.y + m_fKeySizeY);
 
@@ -1390,7 +1712,7 @@ void CKeyBoard::InitNUM()
 	row->push_back(key);
 	curPos.x += key.width;
 
-	// 2-й ряд
+	// 2-Г© Г°ГїГ¤
 	row = &m_Rows[LAYOUT_NUM][1];
 	curPos.x = 0;
 	curPos.y += m_fKeySizeY;
@@ -1515,7 +1837,7 @@ void CKeyBoard::InitNUM()
 	row->push_back(key);
 	curPos.x += key.width;
 
-	// 3-й ряд
+	// 3-Г© Г°ГїГ¤
 	row = &m_Rows[LAYOUT_NUM][2];
 	curPos.x = 0;
 	curPos.y += m_fKeySizeY;
@@ -1640,7 +1962,7 @@ void CKeyBoard::InitNUM()
 	key.id++;
 	row->push_back(key);
 
-	// 4-я строка
+	// 4-Гї Г±ГІГ°Г®ГЄГ 
 	row = &m_Rows[LAYOUT_NUM][3];
 	curPos.x = 0;
 	curPos.y += m_fKeySizeY;

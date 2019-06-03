@@ -26,6 +26,7 @@ enum ePadKeys
 	KEY_JUMP,				// LSHIFT		|	S 					| 	32
 	KEY_LOOK_RIGHT,			// 				| 	E 					| 	64
 	KEY_HANDBRAKE,			// RMB			|	SPACE 				| 	128
+	KEY_AIM,
 	KEY_LOOK_LEFT,			// 				|	Q 					| 	256
 	//bool KEY_LOOK_BEHIND;	// KEY_LOOK_LEFT + KEY_LOOK_RIGHT 		| 	320
 	KEY_SUBMISSION,			// NUM1/MMB		| 	2/NUMPAD+ 			| 	512

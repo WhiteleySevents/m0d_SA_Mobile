@@ -27,6 +27,7 @@ public:
 	float GetArmour();
 	// 0.3.7
 	void TogglePlayerControllable(bool bToggle);
+	void TogglePlayerControllableWithoutLock(bool bToggle);
 	// 0.3.7
 	void SetModelIndex(unsigned int uiModel);
 
@@ -40,6 +41,12 @@ public:
 	int GetCurrentVehicleID();
 	int GetVehicleSeatID();
 
+	uint8_t GetCurrentWeapon();
+	uint8_t GetCurrentCharWeapon();
+	int GetCurrentWeaponSlot(int iWeaponID);
+	void SetArmedWeapon(int iWeaponType);
+	void GiveWeapon(int iWeaponID, int iAmmo);
+
 	ENTITY_TYPE* GetEntityUnderPlayer();
 
 	// допилить
@@ -48,7 +55,7 @@ public:
 	void DestroyFollowPedTask();
 	// допилить
 	void ResetDamageEntity();
-
+	void ShakeCam(int time);
 	// 0.3.7
 	void RestartIfWastedAt(VECTOR *vecRestart, float fRotation);
 	// 0.3.7
@@ -76,10 +83,13 @@ public:
 	// roflan
 	void FindDeathReasonAndResponsiblePlayer(PLAYERID *nPlayer);
 
+	void GetTargetRotation();
+
 	PED_TYPE * GetGtaActor() { return m_pPed; };
 
 public:
 	PED_TYPE*	m_pPed;
+	uint8_t		m_byteCurrentWeapon;
 	uint8_t		m_bytePlayerNumber;
 	uint32_t	m_dwArrow;
 };

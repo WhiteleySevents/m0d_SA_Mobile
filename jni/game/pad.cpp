@@ -12,6 +12,7 @@ PAD_KEYS RemotePlayerKeys[PLAYER_PED_SLOTS];
 uintptr_t dwCurPlayerActor = 0;
 uint8_t byteCurPlayer = 0;
 uint8_t byteCurDriver = 0;
+uint8_t byteCurWeapon = 0;
 
 uint16_t (*CPad__GetPedWalkLeftRight)(uintptr_t thiz);
 uint16_t CPad__GetPedWalkLeftRight_hook(uintptr_t thiz)
@@ -131,7 +132,7 @@ uint32_t CPad__GetAbortClimb_hook(uintptr_t thiz)
 	}
 	else
 	{
-		LocalPlayerKeys.bKeys[ePadKeys::KEY_SECONDARY_ATTACK] = CPad__GetAutoClimb(thiz);
+		LocalPlayerKeys.bKeys[ePadKeys::KEY_SECONDARY_ATTACK] = !(CPad__GetAutoClimb(thiz));
 		return LocalPlayerKeys.bKeys[ePadKeys::KEY_SECONDARY_ATTACK];
 	}
 }
@@ -470,6 +471,35 @@ void AllVehicles__ProcessControl_hook(uintptr_t thiz)
     (( void (*)(VEHICLE_TYPE*))(g_libGTASA+call_addr+1))(pVehicle);
 }
 
+
+/*uint32_t (*CPad__WeaponJustDown)(uintptr_t thiz);
+uint32_t CPad__WeaponJustDown_hook(uintptr_t thiz)
+{
+	if(dwCurPlayerActor && (byteCurPlayer != 0) && (byteCurWeapon != 0))
+	{
+		return RemotePlayerKeys[byteCurPlayer].bKeys[ePadKeys::KEY_FIRE];
+	}
+	else
+	{
+		LocalPlayerKeys.bKeys[ePadKeys::KEY_FIRE] = CPad__WeaponJustDown(thiz);
+		return LocalPlayerKeys.bKeys[ePadKeys::KEY_FIRE];
+	}
+}
+
+uint32_t (*CPad__WeaponUsesTargetingButton)(uintptr_t thiz);
+uint32_t CPad__WeaponUsesTargetingButton_hook(uintptr_t thiz)
+{
+	if(dwCurPlayerActor && (byteCurPlayer != 0) && (byteCurWeapon != 0))
+	{
+		return RemotePlayerKeys[byteCurPlayer].bKeys[ePadKeys::KEY_HANDBRAKE];
+	}
+	else
+	{
+		LocalPlayerKeys.bKeys[ePadKeys::KEY_HANDBRAKE] = CPad__WeaponUsesTargetingButton(thiz);
+		return LocalPlayerKeys.bKeys[ePadKeys::KEY_HANDBRAKE];
+	}
+}*/
+
 void HookCPad()
 {
 	memset(&LocalPlayerKeys, 0, sizeof(PAD_KEYS));
@@ -505,6 +535,13 @@ void HookCPad()
 	SetUpHook(g_libGTASA+0x39DD9C, (uintptr_t)CPad__MeleeAttackJustDown_hook, (uintptr_t*)&CPad__MeleeAttackJustDown);
 	SetUpHook(g_libGTASA+0x39E7B0, (uintptr_t)CPad__DuckJustDown_hook, (uintptr_t*)&CPad__DuckJustDown);
 	SetUpHook(g_libGTASA+0x39DB50, (uintptr_t)CPad__GetBlock_hook, (uintptr_t*)&CPad__GetBlock);
+
+
+	// hooks 	qds team
+	//SetUpHook(g_libGTASA+0x39DFEC, (uintptr_t)CPad__WeaponUsesTargetingButton_hook, (uintptr_t*)&CPad__WeaponUsesTargetingButton);
+	//SetUpHook(g_libGTASA+0x39DF2C, (uintptr_t)CPad__WeaponJustDown_hook, (uintptr_t*)&CPad__WeaponJustDown); // CPed* bool bool
+	//SetUpHook(g_libGTASA+0x563218, (uintptr_t)CWeapon_InitialiseWeapons_hook, (uintptr_t*)&CWeapon_InitialiseWeapons); 
+	//SetUpHook(g_libGTASA+0x563278, (uintptr_t)CWeapon_UpdateWeapons_hook, (uintptr_t*)&CWeapon_UpdateWeapons); 
 
 	// steering lr/ud (incar)
 	SetUpHook(g_libGTASA+0x39C9E4, (uintptr_t)CPad__GetSteeringLeftRight_hook, (uintptr_t*)&CPad__GetSteeringLeftRight);

@@ -67,6 +67,15 @@ const SCRIPT_COMMAND set_marker_color					= { 0x0165, "ii" };
 const SCRIPT_COMMAND show_on_radar2						= { 0x018b, "ii" };
 const SCRIPT_COMMAND set_fighting_style					= { 0x07fe, "iii" };
 const SCRIPT_COMMAND apply_animation					= { 0x0812, "issfiiiii" };
+const SCRIPT_COMMAND give_weapon_to_player				= { 0x01B1, "iii" };	// playerchar, weapon, ammo
+const SCRIPT_COMMAND give_weapon_to_char				= { 0x01B2, "iii" };	// playerchar, weapon, ammo
+const SCRIPT_COMMAND set_current_char_weapon			= { 0x01B8, "ii" };	// weapon, ammo
+const SCRIPT_COMMAND set_current_player_weapon			= { 0x01B9, "ii" };	// weapon, ammo
+const SCRIPT_COMMAND set_render_player_weapon			= { 0x0A38, "" };
+const SCRIPT_COMMAND remove_all_char_weapons			= { 0x048F, "i" };
+const SCRIPT_COMMAND get_weapontype_slot				= { 0x0782, "i" };
+const SCRIPT_COMMAND get_current_char_weapon			= { 0x0470, "i" };
+const SCRIPT_COMMAND get_current_player_weapon			= { 0x046F, "i" };
 const SCRIPT_COMMAND get_line_of_sight					= { 0x06BD, "ffffffiiiii" }; // x1, y1, z1, x2, y2, z2, solid, vehicle, actor, obj, fx
 const SCRIPT_COMMAND create_explosion_with_radius		= { 0x0948, "fffii" };
 const SCRIPT_COMMAND get_ground_z						= { 0x02ce, "fffv" };	// x, y, z, var_ground_z
@@ -110,4 +119,29 @@ const SCRIPT_COMMAND is_pickup_picked_up				= { 0x0214, "i" };
 const SCRIPT_COMMAND turn_off_car_engine				= { 0x02d4,	"i" };
 const SCRIPT_COMMAND turn_on_car_engine					= { 0x0abe,	"i" };
 const SCRIPT_COMMAND turn_car_engine 					= { 0x0918, "ii" };
-const SCRIPT_COMMAND attach_object_to_actor				= { 0x069b, "iiffffff" };
+const SCRIPT_COMMAND attach_object_to_char				= { 0x069b, "iiffffff" };
+const SCRIPT_COMMAND set_object_visible					= { 0x0750, "ii" };
+
+const SCRIPT_COMMAND set_player_drunk_visuals			= { 0x052C, "ii" }; // player, severity (0-255)
+
+const SCRIPT_COMMAND get_player_drunkenness				= { 0x052D, "" };
+const SCRIPT_COMMAND set_drunk_input_delay				= { 0x03FD, "ii" };
+const SCRIPT_COMMAND shake_cam							= { 0x0003, "i" };
+const SCRIPT_COMMAND set_char_proofs 					= { 0x02AB, "iiiiii" };
+const SCRIPT_COMMAND set_char_collision					= { 0x0619, "ii" };
+const SCRIPT_COMMAND set_car_coordinates				= { 0x00AB, "ifff" };
+const SCRIPT_COMMAND get_target_blip_coordinates		= { 0x06AB, ""};
+
+const SCRIPT_COMMAND request_collision					= { 0x04E4, "ff" };
+
+const SCRIPT_COMMAND load_scene							= { 0x03CB, "fff"};
+
+const SCRIPT_COMMAND get_char_weapon_in_slot			= { 0x04B8, "i" };
+
+const SCRIPT_COMMAND is_char_holding_weapon				= { 0x02D8, "ii"};
+
+const SCRIPT_COMMAND is_char_playing_anim				= { 0x0611, "is" };
+
+const SCRIPT_COMMAND disembark_instantly_actor			= { 0x0792, "i"};
+
+const SCRIPT_COMMAND set_car_health						= { 0x0224, "ii" };

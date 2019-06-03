@@ -339,7 +339,16 @@ void CVehicle::SetEngineState(int iState)
 
 void CVehicle::UpdateDamageStatus(uint32_t dwPanelDamage, uint32_t dwDoorDamage, uint8_t byteLightDamage)
 {
+	//Log("UpdateDamageStatus");
+	// UINT16 wVehicleID, UINT32 panels, UINT32 doors, UINT8 lights, UINT8 tires
 
+
+	/*RakNet::BitStream bsSend;
+	bsSend.Write(X);
+	bsSend.Write(dwPanelDamage);
+	bsSend.Write(dwDoorDamage);
+	bsSend.Write(byteLightDamage);
+	pNetGame->GetRakClient()->RPC(&RPC_DamageVehicle, &bsSend, HIGH_PRIORITY, RELIABLE, 0, false, UNASSIGNED_NETWORK_ID, 0);*/
 }
 
 unsigned int CVehicle::GetVehicleSubtype()

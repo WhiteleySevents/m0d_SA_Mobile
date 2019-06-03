@@ -22,7 +22,7 @@ public:
 
 	void InitInMenu();
 	void InitInGame();
-
+	void SetDrunkBlur(float level);
 	CCamera* GetCamera() { return m_pGameCamera; }
 	// 0.3.7
 	CPlayerPed* FindPlayerPed() { if(!m_pGamePlayer) m_pGamePlayer = new CPlayerPed(); return m_pGamePlayer; }
@@ -96,6 +96,7 @@ public:
 	void DisplayGameText(char* szStr, int iTime, int iType);
 	// 0.3.7
 	void SetGravity(float fGravity);
+	float GetGravity();
 	void ToggleCJWalk(bool bUseCJWalk);
 	// 0.3.7
 	void DisableInteriorEnterExits();

@@ -11,6 +11,10 @@ void CCamera::SetBehindPlayer()
   	ScriptCommand(&restore_camera_jumpcut);
 }
 
+int CCamera::GetLookDirection(){
+	return (int)(g_libGTASA+0x36D6D0);
+}
+
 // 0.3.7
 void CCamera::Restore()
 {

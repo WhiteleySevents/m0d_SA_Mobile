@@ -1,10 +1,16 @@
 #include "../main.h"
 #include "game.h"
 #include "net/netgame.h"
+#include "net/localplayer.h"
 #include "util/armhook.h"
+#include "chatwindow.h"
+#include "../modsa.h"
 
 extern CGame* pGame;
 extern CNetGame *pNetGame;
+extern CLocalPlayer *pLocalPlayer;
+extern CChatWindow *pChatWindow;
+extern CModSAWindow *pModSAWindow;
 
 CPlayerPed::CPlayerPed()
 {
@@ -77,7 +83,7 @@ void CPlayerPed::Destroy()
 	}
 
 	/*
-		if(m_dwParachute) ... (допилить)
+		if(m_dwParachute) ... (Г¤Г®ГЇГЁГ«ГЁГІГј)
 	*/
 
 	Log("Removing from vehicle..");
@@ -187,17 +193,17 @@ void CPlayerPed::PutDirectlyInVehicle(int iVehicleID, int iSeat)
 	if(!GamePool_Vehicle_GetAt(iVehicleID)) return;
 	if(!GamePool_Ped_GetAt(m_dwGTAId)) return;
 
-	/* допилить
-	if(GetCurrentWeapon() == WEAPON_PARACHUTE) {
+	
+	if(GetCurrentWeapon() == 46) {
 		SetArmedWeapon(0);
-	}*/
+	}
 
 	VEHICLE_TYPE *pVehicle = GamePool_Vehicle_GetAt(iVehicleID);
 
 	if(pVehicle->fHealth == 0.0f) return;
 	// check is cplaceable
 	if (pVehicle->entity.vtable == g_libGTASA+0x5C7358) return;
-	// check seatid (допилить)
+	// check seatid (Г¤Г®ГЇГЁГ«ГЁГІГј)
 
 	if(iSeat == 0)
 	{
@@ -215,8 +221,498 @@ void CPlayerPed::PutDirectlyInVehicle(int iVehicleID, int iSeat)
 
 	if(pNetGame)
 	{
-		// допилить (трейлеры)
+		// Г¤Г®ГЇГЁГ«ГЁГІГј (ГІГ°ГҐГ©Г«ГҐГ°Г»)
 	}
+}
+
+uint8_t CPlayerPed::GetCurrentWeapon()
+{
+	//if(!m_pPed) return 0;
+	//if(GamePool_Ped_GetAt(m_dwGTAId) == 0) return 0;
+	//return ScriptCommand(&get_current_char_weapon, m_dwGTAId);
+	return m_byteCurrentWeapon;
+}
+
+uint8_t CPlayerPed::GetCurrentCharWeapon()
+{
+	//if(!m_pPed) return 0;
+	//if(GamePool_Ped_GetAt(m_dwGTAId) == 0) return 0;
+	//return ScriptCommand(&get_current_char_weapon, m_dwGTAId);
+	//return m_byteCurrentWeapon;
+	for(int i = 0; i <= 46; i++){
+		if(ScriptCommand(&is_char_holding_weapon, m_dwGTAId, i))return (uint8_t)i;
+	}
+}
+
+int CPlayerPed::GetCurrentWeaponSlot(int iWeaponID)
+{
+	if(m_pPed)return ScriptCommand(&get_weapontype_slot, iWeaponID);
+	return -1;
+}
+
+void CPlayerPed::GiveWeapon(int iWeaponID, int iAmmo)
+{
+	// Brass Knuckles
+	if(iWeaponID == 1){
+		int i = WEAPON_MODEL_BRASSKNUCKLE;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Golf Club
+	if(iWeaponID == 2){
+		int i = WEAPON_MODEL_GOLFCLUB;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Nitestick
+	if(iWeaponID == 3){
+		int i = WEAPON_MODEL_NITESTICK;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Knife
+	if(iWeaponID == 4){
+		int i = WEAPON_MODEL_KNIFE;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Bat
+	if(iWeaponID == 5){
+		int i = WEAPON_MODEL_BAT;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Shovel
+	if(iWeaponID == 6){
+		int i = WEAPON_MODEL_SHOVEL;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Pool Cue
+	if(iWeaponID == 7){
+		int i = WEAPON_MODEL_POOLSTICK;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Katana
+	if(iWeaponID == 8){
+		int i = WEAPON_MODEL_KATANA;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Chainsaw
+	if(iWeaponID == 9){
+		int i = WEAPON_MODEL_CHAINSAW;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Purple Dildo (hello to Leanden)
+	if(iWeaponID == 10){
+		int i = WEAPON_MODEL_DILDO;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Dildo (hello to Leanden)
+	if(iWeaponID == 11){
+		int i = WEAPON_MODEL_DILDO2;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Vibrator (hello to Leanden)
+	if(iWeaponID == 12){
+		int i = WEAPON_MODEL_VIBRATOR;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Silver Vibrator (hello to Leanden)
+	if(iWeaponID == 13){
+		int i = WEAPON_MODEL_VIBRATOR2;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Flowers
+	if(iWeaponID == 14){
+		int i = WEAPON_MODEL_FLOWER;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Cane
+	if(iWeaponID == 15){
+		int i = WEAPON_MODEL_CANE;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Grenade
+	if(iWeaponID == 16){
+		int i = WEAPON_MODEL_GRENADE;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Tear Gas
+	if(iWeaponID == 17){
+		int i = WEAPON_MODEL_TEARGAS;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Molotov Cocktail
+	if(iWeaponID == 18){
+		int i = WEAPON_MODEL_MOLOTOV;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Pistol
+	if(iWeaponID == 22){
+		int i = WEAPON_MODEL_COLT45;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Silenced Pistol
+	if(iWeaponID == 23){
+		int i = WEAPON_MODEL_SILENCED;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Deagle
+	if(iWeaponID == 24){
+		int i = WEAPON_MODEL_DEAGLE;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Shotgun
+	if(iWeaponID == 25){
+		int i = WEAPON_MODEL_SHOTGUN;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Sawedoff Shotgun
+	if(iWeaponID == 26){
+		int i = WEAPON_MODEL_SAWEDOFF;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Combat Shotgun
+	if(iWeaponID == 27){
+		int i = WEAPON_MODEL_SHOTGSPA;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Uzi
+	if(iWeaponID == 28){
+		int i = WEAPON_MODEL_UZI;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// SMG
+	if(iWeaponID == 29){
+		int i = WEAPON_MODEL_MP5;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// AK-47
+	if(iWeaponID == 30){
+		int i = WEAPON_MODEL_AK47;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// M4
+	if(iWeaponID == 31){
+		int i = WEAPON_MODEL_M4;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Tec-9
+	if(iWeaponID == 32){
+		int i = WEAPON_MODEL_TEC9;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Rifle
+	if(iWeaponID == 33){
+		int i = WEAPON_MODEL_RIFLE;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Sniper Rifle
+	if(iWeaponID == 34){
+		int i = WEAPON_MODEL_SNIPER;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// RPG
+	if(iWeaponID == 35){
+		int i = WEAPON_MODEL_ROCKETLAUNCHER;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// HS Rocket
+	if(iWeaponID == 36){
+		int i = WEAPON_MODEL_HEATSEEKER;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Flamethrower
+	if(iWeaponID == 37){
+		int i = WEAPON_MODEL_FLAMETHROWER;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Minigun
+	if(iWeaponID == 38){
+		int i = WEAPON_MODEL_MINIGUN;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Satchel Charges
+	if(iWeaponID == 39){
+		int i = WEAPON_MODEL_SATCHEL;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Detonator
+	if(iWeaponID == 40){
+		int i = WEAPON_MODEL_BOMB;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Spraycan
+	if(iWeaponID == 41){
+		int i = WEAPON_MODEL_SPRAYCAN;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Fire Extinguisher
+	if(iWeaponID == 42){
+		int i = WEAPON_MODEL_FIREEXTINGUISHER;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Camera
+	if(iWeaponID == 43){
+		int i = WEAPON_MODEL_CAMERA;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// NV Goggles
+	if(iWeaponID == 44){
+		int i = WEAPON_MODEL_NIGHTVISION;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Thermal Goggles
+	if(iWeaponID == 45){
+		int i = WEAPON_MODEL_INFRARED;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Parachute
+	if(iWeaponID == 46){
+		int i = WEAPON_MODEL_PARACHUTE;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	// Jetpack
+	if(iWeaponID == 47){
+		int i = WEAPON_MODEL_JETPACK;
+		if(!pGame->IsModelLoaded(i)) {
+			pGame->RequestModel(i);
+			pGame->LoadRequestedModels();
+			while(!pGame->IsModelLoaded(i)) usleep(5);
+		}
+	}
+
+	ScriptCommand(&give_weapon_to_char,m_dwGTAId,iWeaponID,iAmmo);
+	ScriptCommand(&give_weapon_to_player,m_dwGTAId,iWeaponID,iAmmo);
+	ScriptCommand(&set_render_player_weapon);
+	SetArmedWeapon(iWeaponID);
+	m_byteCurrentWeapon = iWeaponID;
+}
+
+
+void CPlayerPed::SetArmedWeapon(int iWeaponType)
+{
+	ScriptCommand(&give_weapon_to_char,m_dwGTAId,iWeaponType, 1);
+	ScriptCommand(&set_current_char_weapon,m_dwGTAId,iWeaponType);
+	ScriptCommand(&set_current_player_weapon,m_dwGTAId,iWeaponType);
+	ScriptCommand(&set_render_player_weapon);
+	m_byteCurrentWeapon = iWeaponType;
+}
+
+void CPlayerPed::ClearAllWeapons(){
+	ScriptCommand(&remove_all_char_weapons,m_dwGTAId);
+	ScriptCommand(&set_render_player_weapon);
+	m_byteCurrentWeapon = 0;
 }
 
 void CPlayerPed::EnterVehicle(int iVehicleID, bool bPassenger)
@@ -231,15 +727,15 @@ void CPlayerPed::EnterVehicle(int iVehicleID, bool bPassenger)
 		if(ThisVehicleType->entity.nModelIndex == TRAIN_PASSENGER &&
 			(m_pPed == GamePool_FindPlayerPed()))
 		{
-			ScriptCommand(&put_actor_in_car2, m_dwGTAId, iVehicleID, -1);
+			if(!IN_VEHICLE(m_pPed))ScriptCommand(&put_actor_in_car2, m_dwGTAId, iVehicleID, -1);
 		}
 		else
 		{
-			ScriptCommand(&send_actor_to_car_passenger,m_dwGTAId,iVehicleID, 3000, -1);
+			if(!IN_VEHICLE(m_pPed))ScriptCommand(&send_actor_to_car_passenger,m_dwGTAId,iVehicleID, 3000, -1);
 		}
 	}
 	else
-		ScriptCommand(&send_actor_to_car_driverseat, m_dwGTAId, iVehicleID, 3000);
+		if(!IN_VEHICLE(m_pPed))ScriptCommand(&send_actor_to_car_driverseat, m_dwGTAId, iVehicleID, 3000);
 }
 
 // 0.3.7
@@ -296,6 +792,11 @@ int CPlayerPed::GetVehicleSeatID()
 	return (-1);
 }
 
+
+void CPlayerPed::ShakeCam(int time){
+	ScriptCommand(&shake_cam, time);
+}
+
 // 0.3.7
 void CPlayerPed::TogglePlayerControllable(bool bToggle)
 {
@@ -312,6 +813,27 @@ void CPlayerPed::TogglePlayerControllable(bool bToggle)
 	{
 		ScriptCommand(&toggle_player_controllable, m_bytePlayerNumber, 1);
 		ScriptCommand(&lock_actor, m_dwGTAId, 0);
+		if(!IsInVehicle()) 
+		{
+			GetMatrix(&mat);
+			TeleportTo(mat.pos.X, mat.pos.Y, mat.pos.Z);
+		}
+	}
+}
+
+void CPlayerPed::TogglePlayerControllableWithoutLock(bool bToggle)
+{
+	MATRIX4X4 mat;
+
+	if(!GamePool_Ped_GetAt(m_dwGTAId)) return;
+
+	if(!bToggle)
+	{
+		ScriptCommand(&toggle_player_controllable, m_bytePlayerNumber, 0);
+	}
+	else
+	{
+		ScriptCommand(&toggle_player_controllable, m_bytePlayerNumber, 1);
 		if(!IsInVehicle()) 
 		{
 			GetMatrix(&mat);
@@ -339,19 +861,13 @@ void CPlayerPed::SetModelIndex(unsigned int uiModel)
 	}
 }
 
-// допилить
+// Г¤Г®ГЇГЁГ«ГЁГІГј
 void CPlayerPed::DestroyFollowPedTask()
 {
 
 }
 
-// допилить
-void CPlayerPed::ClearAllWeapons()
-{
-
-}
-
-// допилить
+// Г¤Г®ГЇГЁГ«ГЁГІГј
 void CPlayerPed::ResetDamageEntity()
 {
 
@@ -373,6 +889,17 @@ void CPlayerPed::ForceTargetRotation(float fRotation)
 	m_pPed->fRotation2 = DegToRad(fRotation);
 
 	ScriptCommand(&set_actor_z_angle,m_dwGTAId,fRotation);
+}
+
+void CPlayerPed::GetTargetRotation()
+{
+	if(!m_pPed) return;
+	if(!GamePool_Ped_GetAt(m_dwGTAId)) return;
+
+	//m_pPed->fRotation1;
+	//m_pPed->fRotation2;
+
+	pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Rotations: %f | %f", m_pPed->fRotation1, m_pPed->fRotation2);
 }
 
 void CPlayerPed::SetRotation(float fRotation)
@@ -440,7 +967,7 @@ void CPlayerPed::ApplyAnimation( char *szAnimName, char *szAnimFile, float fT,
 
 	if(!pGame->IsAnimationLoaded(szAnimFile))
 	{
-		pGame->RequestAnimation(szAnimFile);
+		if(pModSAWindow->m_bAPA != 1)pGame->RequestAnimation(szAnimFile);
 		while(!pGame->IsAnimationLoaded(szAnimFile))
 		{
 			usleep(1000);
@@ -449,7 +976,7 @@ void CPlayerPed::ApplyAnimation( char *szAnimName, char *szAnimFile, float fT,
 		}
 	}
 
-	ScriptCommand(&apply_animation, m_dwGTAId, szAnimName, szAnimFile, fT, opt1, opt2, opt3, opt4, iUnk);
+	if(pModSAWindow->m_bAPA != 1)ScriptCommand(&apply_animation, m_dwGTAId, szAnimName, szAnimFile, fT, opt1, opt2, opt3, opt4, iUnk);
 }
 
 void CPlayerPed::FindDeathReasonAndResponsiblePlayer(PLAYERID *nPlayer)
@@ -500,6 +1027,43 @@ void CPlayerPed::FindDeathReasonAndResponsiblePlayer(PLAYERID *nPlayer)
 	*nPlayer = INVALID_PLAYER_ID;
 }
 
+/*bool CPlayerPed::StartPassengerDriveByMode()
+{
+	if(m_pPed) {
+
+		if(!IN_VEHICLE(m_pPed) || !m_pPed->pVehicle) return FALSE;
+
+		int iWeapon = GetCurrentWeapon();
+		
+		// Don't allow them to enter driveby with a para
+		if(iWeapon == WEAPON_PARACHUTE) {
+			SetArmedWeapon(0);
+			return FALSE;
+		}
+
+		// Check for an uzi type weapon.
+		if((iWeapon != WEAPON_MODEL_UZI) && (iWeapon != WEAPON_MODEL_MP5) && (iWeapon != WEAPON_MODEL_TEC9)) {
+			return FALSE;
+		}
+
+		SetArmedWeapon(iWeapon);
+	
+		 We should replace them in their current seat.
+		int iVehicleID = GamePool_Vehicle_GetIndex((VEHICLE_TYPE *)m_pPed->pVehicle);
+		int iSeatID = GetVehicleSeatID();
+		PutDirectlyInVehicle(iVehicleID,iSeatID);
+
+		ScriptCommand(&enter_passenger_driveby,
+			m_dwGTAId,-1,-1,0.0f,0.0f,0.0f,300.0f,8,1,100);
+
+		//SetWeaponModelIndex(iWeapon);
+
+		return TRUE;
+	}
+	return FALSE;
+}
+*/
+
 // 0.3.7
 void CPlayerPed::GetBonePosition(int iBoneID, VECTOR* vecOut)
 {
@@ -534,7 +1098,7 @@ ENTITY_TYPE* CPlayerPed::GetEntityUnderPlayer()
 	return (ENTITY_TYPE*)entity;
 }
 
-// допилить
+// Г¤Г®ГЇГЁГ«ГЁГІГј
 uint16_t CPlayerPed::GetKeys(uint16_t *lrAnalog, uint16_t *udAnalog)
 {
 	*lrAnalog = LocalPlayerKeys.wKeyLR;

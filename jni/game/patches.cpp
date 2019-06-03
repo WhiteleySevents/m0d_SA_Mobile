@@ -88,7 +88,7 @@ void ApplyInGamePatches()
 {
 	Log("Installing patches (ingame)..");
 
-	/* Разблокировка карты */
+	/* ГђГ Г§ГЎГ«Г®ГЄГЁГ°Г®ГўГЄГ  ГЄГ Г°ГІГ» */
 	// CTheZones::ZonesVisited[100]
 	memset((void*)(g_libGTASA+0x8EA7B0), 1, 100);
 	// CTheZones::ZonesRevealed
@@ -105,24 +105,24 @@ void ApplyInGamePatches()
 	UnFuck(g_libGTASA+0x398A34);
 	NOP(g_libGTASA+0x398A34, 2);
 
-	// множитель для MaxHealth
+	// Г¬Г­Г®Г¦ГЁГІГҐГ«Гј Г¤Г«Гї MaxHealth
 	UnFuck(g_libGTASA+0x3BAC68);
-	*(float*)(g_libGTASA+0x3BAC68) = 176.0f;
-	// множитель для Armour
+	*(float*)(g_libGTASA+0x3BAC68) = 176.0f; //176
+	// Г¬Г­Г®Г¦ГЁГІГҐГ«Гј Г¤Г«Гї Armour
 	UnFuck(g_libGTASA+0x27D884);
-	*(float*)(g_libGTASA+0x27D884) = 176.0;
+	*(float*)(g_libGTASA+0x27D884) = 176.0; //176
 
 	// CEntryExit::GenerateAmbientPeds nulled from CEntryExit::TransitionFinished
 	UnFuck(g_libGTASA+0x2C2C22);
 	NOP(g_libGTASA+0x2C2C22, 4);
 
-	// ПОТРАЧЕНО
+	// ГЏГЋГ’ГђГЂГ—Г…ГЌГЋ
 	WriteMemory(g_libGTASA+0x3D62FC, (uintptr_t)"\xF7\x46", 2);
 
 	// CPlayerPed::CPlayerPed task fix
 	WriteMemory(g_libGTASA+0x458ED1, (uintptr_t)"\xE0", 1);
 
-	// ReapplyPlayerAnimation (хз зачем)
+	// ReapplyPlayerAnimation (ГµГ§ Г§Г Г·ГҐГ¬)
 	NOP(g_libGTASA+0x45477E, 5);
 
 	// radar draw blips

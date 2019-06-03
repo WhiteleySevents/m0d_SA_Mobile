@@ -20,6 +20,7 @@ public:
 	void InterpolateCameraPos(VECTOR *posFrom, VECTOR *posTo, int time, uint8_t mode);
 	// 0.3.7
 	void InterpolateCameraLookAt(VECTOR *posFrom, VECTOR *posTo, int time, uint8_t mode);
+	int GetLookDirection();
 
 private:
 	ENTITY_TYPE* m_pEntity;

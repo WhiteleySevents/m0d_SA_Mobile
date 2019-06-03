@@ -4,9 +4,12 @@
 #include "game.h"
 #include "net/netgame.h"
 #include "gui/gui.h"
+#include "../modsa.h"
 
 extern CNetGame *pNetGame;
+extern CGame *pGame;
 extern CGUI *pGUI;
+extern CModSAWindow *pModSAWindow;
 
 // Neiae/SAMP
 bool g_bPlaySAMP = false;
@@ -96,6 +99,7 @@ int Init_hook(int r0, int r1, int r2)
 	int result = (( int (*)(int, int, int))(g_libGTASA+0x244F2C+1))(r0, r1, r2);
 
 	InitSAMP();
+	// removed cond
 
 	return result;
 }
@@ -313,6 +317,7 @@ int CRadar__SetCoordBlip_hook(int r0, float X, float Y, float Z, int r4, int r5,
 		bsSend.Write(X);
 		bsSend.Write(Y);
 		bsSend.Write(findZ);
+		pModSAWindow->StoreMarkerXYZ(X, Y, findZ);
 		pNetGame->GetRakClient()->RPC(&RPC_MapMarker, &bsSend, HIGH_PRIORITY, RELIABLE, 0, false, UNASSIGNED_NETWORK_ID, nullptr);
 	}
 
@@ -384,19 +389,25 @@ extern "C" bool NotifyEnterVehicle(VEHICLE_TYPE *_pVehicle)
     if(VehicleID == INVALID_VEHICLE_ID) return false;
     if(!pVehiclePool->GetSlotState(VehicleID)) return false;
     pVehicle = pVehiclePool->GetAt(VehicleID);
-    if(pVehicle->m_bDoorsLocked) return false;
+    //if(pVehicle->m_bDoorsLocked) return false;
     if(pVehicle->m_pVehicle->entity.nModelIndex == TRAIN_PASSENGER) return false;
  
     if(pVehicle->m_pVehicle->pDriver &&
         pVehicle->m_pVehicle->pDriver->dwPedType != 0)
         return false;
+ 	
+ 	MATRIX4X4 mat;
  
-    CLocalPlayer *pLocalPlayer = pNetGame->GetPlayerPool()->GetLocalPlayer();
- 
-    //if(pLocalPlayer->GetPlayerPed() && pLocalPlayer->GetPlayerPed()->GetCurrentWeapon() == WEAPON_PARACHUTE)
-    //  pLocalPlayer->GetPlayerPed()->SetArmedWeapon(0);
- 
-    pLocalPlayer->SendEnterVehicleNotification(VehicleID, false);
+ 	CPlayerPed *pPlayerPed = pGame->FindPlayerPed();
+
+ 	if(pVehicle->m_bDoorsLocked) 
+	{
+		if (pVehicle->GetVehicleSubtype() == VEHICLE_SUBTYPE_BIKE || pVehicle->GetVehicleSubtype() == VEHICLE_SUBTYPE_PUSHBIKE) {
+			pPlayerPed->GetMatrix(&mat);
+			pPlayerPed->TeleportTo(mat.pos.X, mat.pos.Y, mat.pos.Z);
+		}
+		return false;
+	}
  
     return true;
 }
@@ -459,6 +470,8 @@ void InstallSpecialHooks()
 
 void InstallHooks()
 {
+	// no hooks - no problems (6)
+	// -----------------------------
 	SetUpHook(g_libGTASA+0x23B3DC, (uintptr_t)NvFOpen_hook, (uintptr_t*)&NvFOpen);
 	SetUpHook(g_libGTASA+0x3D7CA8, (uintptr_t)CLoadingScreen_DisplayPCScreen_hook, (uintptr_t*)&CLoadingScreen_DisplayPCScreen);
 	SetUpHook(g_libGTASA+0x39AEF4, (uintptr_t)Render2dStuff_hook, (uintptr_t*)&Render2dStuff);

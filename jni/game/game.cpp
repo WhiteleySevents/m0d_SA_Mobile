@@ -1,6 +1,7 @@
 #include "../main.h"
 #include "game.h"
 #include "../util/armhook.h"
+#include "textdraw.h"
 
 void ApplyPatches();
 void ApplyInGamePatches();
@@ -29,6 +30,11 @@ CGame::CGame()
 	memset(&bUsedPlayerSlots[0], 0, PLAYER_PED_SLOTS);
 }
 
+
+void CGame::SetDrunkBlur(float level){
+	UnFuck(g_libGTASA+0x28E500);
+	*(float*)(g_libGTASA+0x28E500) = level;
+}
 // 0.3.7
 uint8_t CGame::FindFirstFreePlayerPedSlot()
 {
@@ -441,6 +447,12 @@ void CGame::SetGravity(float fGravity)
 {
 	UnFuck(g_libGTASA+0x3A0B64);
 	*(float*)(g_libGTASA+0x3A0B64) = fGravity;
+}
+
+float CGame::GetGravity()
+{
+	UnFuck(g_libGTASA+0x3A0B64);
+	return *(float*)(g_libGTASA+0x3A0B64);
 }
 
 void CGame::ToggleCJWalk(bool bUseCJWalk)

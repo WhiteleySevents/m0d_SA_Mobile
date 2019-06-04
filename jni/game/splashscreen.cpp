@@ -74,7 +74,7 @@ void RenderSplashScreen()
 	ImGui_ImplRenderWare_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::GetBackgroundDrawList()->AddText(ImVec2(1050, 657), 0xF60000AA, 
+	ImGui::GetBackgroundDrawList()->AddText(ImVec2(700, 600), 0xF60000AA, 
 		"\n\t"
 		u8"Loading MultiPlayer...");
 

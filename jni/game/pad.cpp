@@ -118,7 +118,7 @@ uint32_t CPad__GetAutoClimb_hook(uintptr_t thiz)
 	}
 	else
 	{
-		LocalPlayerKeys.bKeys[ePadKeys::KEY_JUMP] = CPad__GetAutoClimb(thiz);
+		//LocalPlayerKeys.bKeys[ePadKeys::KEY_JUMP] = CPad__GetAutoClimb(thiz);
 		return LocalPlayerKeys.bKeys[ePadKeys::KEY_JUMP];
 	}
 }
@@ -132,7 +132,7 @@ uint32_t CPad__GetAbortClimb_hook(uintptr_t thiz)
 	}
 	else
 	{
-		LocalPlayerKeys.bKeys[ePadKeys::KEY_SECONDARY_ATTACK] = !(CPad__GetAutoClimb(thiz));
+		//LocalPlayerKeys.bKeys[ePadKeys::KEY_SECONDARY_ATTACK] = !(CPad__GetAutoClimb(thiz));
 		return LocalPlayerKeys.bKeys[ePadKeys::KEY_SECONDARY_ATTACK];
 	}
 }

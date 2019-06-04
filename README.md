@@ -1,6 +1,10 @@
 # m0d_SA_Mobile
 m0d_SA s0beit Mobile
 
+[v0.0.0.1 patch 0.1]
+* Many bug fixes from previous version.
+
+
 [v0.0.0.1]
 
 * Added a dialogue with the choice of nickname / server / server password.

@@ -108,6 +108,7 @@ void InitInGame()
 		pModSAWindow->Clear();
 		pSetsWindow->Clear();
 		pSetsWindow->Show(true);
+		pModSAWindow->protect = 1;
 		bNetworkInited = true;
 		return;
 	}

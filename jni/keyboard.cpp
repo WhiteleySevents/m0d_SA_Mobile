@@ -284,7 +284,7 @@ void CKeyBoard::Send()
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/reconnect - reconnect");
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Some commands will not work if you are on a secure server.");
 			pChatWindow->AddInfoMessage(" ");
-			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} m0d_SA Mobile v0.0.0.1 by QDS Team");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} m0d_SA Mobile v0.0.0.1 patch 0.1 by QDS Team");
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} Community: vk.com/mobile.samp");
 			m_bEnable = false;
 		}else if(m_sInput == "/modsa"){
@@ -321,7 +321,7 @@ void CKeyBoard::Send()
 				pNetGame->GetRakClient()->Disconnect(500);
 				pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
 			}else{
-				pNetGame->ShutDownForGameRestart();
+				//pNetGame->ShutDownForGameRestart();
 				pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
 			}
 			m_bEnable = false;

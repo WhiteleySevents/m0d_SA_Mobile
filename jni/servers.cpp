@@ -107,7 +107,7 @@ void CServersWindow::ShowAllServers()
         unsigned short port = 7777;
 
         pNetGame = new CNetGame( 
-            "213.32.116.173",
+            "37.230.139.49",
             port, 
             pSetsWindow->username,
             pSetsWindow->password);

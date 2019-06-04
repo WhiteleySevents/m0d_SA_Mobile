@@ -13,10 +13,10 @@ public:
 	void ToggleRPC(int rpcid);
 	void ToggleTeleport(int posid);
 	void StoreMarkerXYZ(float x, float y, float z);
-	void ShowCoordFly(bool bShow);
+	void ShowFlyMenu(bool bShow);
 
-	void SetCoordFlyDistance(float distance);
-	float GetCoordFlyDistance();
+	void SetFlySets(float distance);
+	float GetFlySets();
 
 public:
 	bool		m_bIsActive;

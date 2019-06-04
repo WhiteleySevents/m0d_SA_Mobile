@@ -1,8 +1,7 @@
 # m0d_SA_Mobile
 m0d_SA s0beit Mobile
 
-* v0.0.0.1:
-
+[v0.0.0.1]
 
 * Added a dialogue with the choice of nickname / server / server password.
 * Added cheat menu, which includes tabs - cheats; weapons; teleports; settings; SA-MP patches.

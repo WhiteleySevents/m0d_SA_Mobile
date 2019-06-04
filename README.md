@@ -1,6 +1,7 @@
 # m0d_SA_Mobile
 m0d_SA s0beit Mobile
 
+-------------------------------------------------------------------------
 v0.0.0.1:
 * Added a dialogue with the choice of nickname / server / server password.
 * Added cheat menu, which includes tabs - cheats; weapons; teleports; settings; SA-MP patches.
@@ -11,6 +12,7 @@ v0.0.0.1:
 * One tab has been added to the SA-MP patches tab - Ignor Incomming RPC.
 * Fixed client bugs.
 
+-------------------------------------------------------------------------
 * The following RPC's have been added to the "Ignor Incomming RPC" tab:
 - SetPlayerHealth
 - ResetPlayerWeapons
@@ -22,6 +24,7 @@ v0.0.0.1:
 - SetVehicleVelocity
 - SetVehicleParams
 
+-------------------------------------------------------------------------
 * Added commands in client:
 - // info (information)
 - /modsa (cheat menu)

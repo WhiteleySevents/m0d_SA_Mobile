@@ -35,7 +35,7 @@ void CDialogWindow::Show(bool bShow)
 {
 	if(pModSAWindow->m_bSD == 1)return;
 	if(pGame) 
-		pGame->FindPlayerPed()->TogglePlayerControllableWithoutLock(!bShow);
+		pGame->FindPlayerPed()->TogglePlayerControllable(!bShow);
 
 	m_bIsActive = bShow;
 }
@@ -283,9 +283,10 @@ void CDialogWindow::Render()
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
-	ImGui::Begin(m_utf8Title, nullptr, 
-		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize);
-
+	ImGui::Begin("dialog_title", nullptr, 
+		ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize);
+	TextWithColors(m_utf8Title);
+	ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 2.75) );
 	switch(m_byteDialogStyle)
 	{
 		case DIALOG_STYLE_MSGBOX:
@@ -293,8 +294,18 @@ void CDialogWindow::Render()
 		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 50) );
 		break;
 
-		case DIALOG_STYLE_INPUT:
 		case DIALOG_STYLE_PASSWORD:
+		TextWithColors(m_putf8Info);
+		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 10) );
+		if( ImGui::Button("**********", ImVec2(555, 45) ))
+		{
+			if(!pKeyBoard->IsOpen())
+				pKeyBoard->Open(&DialogWindowInputHandler);
+		}
+		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 5) );
+		break;
+
+		case DIALOG_STYLE_INPUT:
 		TextWithColors(m_putf8Info);
 		ImGui::ItemSize( ImVec2(0, pGUI->GetFontSize()/2 + 10) );
 		if( ImGui::Button(utf8DialogInputBuffer, ImVec2(555, 45) ))
@@ -334,7 +345,7 @@ void CDialogWindow::Render()
 			ShowListItems();
 			ImGui::SetWindowSize(ImVec2(-1, -1));
 			ImVec2 size = ImGui::GetWindowSize();
-			ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x)/2) + 435, ((io.DisplaySize.y - size.y)/2)) );
+			ImGui::SetWindowPos( ImVec2( ((io.DisplaySize.x - size.x + 435)/2), ((io.DisplaySize.y - size.y)/2)) );
 			ImGui::End();
 			ShowListInfo();
 			ImGui::ItemSize( ImVec2(285, 155) );
@@ -350,8 +361,12 @@ void CDialogWindow::Render()
 		if(ImGui::Button(m_utf8Button1, ImVec2(125, 50)))
 		{
 			Show(false);
+
+			// santrope rp dialog fix:
+			char *strid = szDialogInputBuffer;
+			int id = atoi(strid) - 1;
 			if(pNetGame) 
-				pNetGame->SendDialogResponse(m_wDialogID, 1, 0, szDialogInputBuffer);
+				pNetGame->SendDialogResponse(m_wDialogID, 1, id, szDialogInputBuffer);
 		}
 	}
 

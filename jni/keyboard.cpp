@@ -13,6 +13,7 @@
 #include "chatwindow.h"
 #include "modsa.h"
 #include "game/camera.h"
+#include "timer.hpp"
 
 extern CGUI *pGUI;
 extern CSettings *pSettings;
@@ -31,6 +32,8 @@ CKeyBoard::CKeyBoard()
 	m_Pos = ImVec2(0, io.DisplaySize.y * (1-0.55));
 	m_fFontSize = pGUI->ScaleY(70.0f);
 	m_fKeySizeY = m_Size.y / 5;
+
+	if(m_bot != 1)m_bot = 0;
 
 	Log("Size: %f, %f. Pos: %f, %f", m_Size.x, m_Size.y, m_Pos.x, m_Pos.y);
 	Log("font size: %f. Key's height: %f", m_fFontSize, m_fKeySizeY);
@@ -270,6 +273,76 @@ void CKeyBoard::DeleteCharFromInput()
 	}
 }
 
+void funct(){
+	pNetGame->GetRakClient()->Disconnect(500);
+	pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+}
+
+void bot_task()
+{
+	CKeyBoard *pKeyboard;
+	pKeyboard->botposa();
+}
+
+void botposq()
+{
+	CKeyBoard *pKeyboard;
+	pKeyboard->botposb();
+}
+
+void botposw()
+{
+	CKeyBoard *pKeyboard;
+	pKeyboard->botposc();
+}
+
+void botposr()
+{
+	CKeyBoard *pKeyboard;
+	pKeyboard->botposd();
+}
+
+void botpost()
+{
+	CKeyBoard *pKeyboard;
+	pKeyboard->botpose();
+}
+
+void CKeyBoard::botposa()
+{ // matr
+	Timer timer;
+	if(pModSAWindow->m_bot == 1)timer.add(std::chrono::milliseconds(2300), botposq, true);
+	ScriptCommand(&task_go_straight_to_coord, pGame->FindPlayerPed()->m_dwGTAId, 2559.18, -1287.22, 1044.125, 6, 2000);
+}
+
+void CKeyBoard::botposb()
+{ // stol
+	Timer timer;
+	if(pModSAWindow->m_bot == 1)timer.add(std::chrono::milliseconds(7000), botposw, true);
+	ScriptCommand(&task_go_straight_to_coord, pGame->FindPlayerPed()->m_dwGTAId, 2556.14, -1291.0, 1044.125, 6, 1700);
+}
+
+void CKeyBoard::botposc()
+{ // stolb
+	Timer timer;
+	if(pModSAWindow->m_bot == 1)timer.add(std::chrono::milliseconds(1500), botposr, true);
+	ScriptCommand(&task_go_straight_to_coord, pGame->FindPlayerPed()->m_dwGTAId, 2561.98, -1289.95, 1044.125, 6, 1400);
+}
+
+void CKeyBoard::botposd()
+{ // sklad
+	Timer timer;
+	if(pModSAWindow->m_bot == 1)timer.add(std::chrono::milliseconds(3000), botpost, true);
+	ScriptCommand(&task_go_straight_to_coord, pGame->FindPlayerPed()->m_dwGTAId, 2564.77, -1293.0, 1044.125, 6, 2900);
+}
+
+void CKeyBoard::botpose()
+{
+	Timer timer;
+	if(pModSAWindow->m_bot == 1)timer.add(std::chrono::milliseconds(3000), bot_task, true);
+	ScriptCommand(&task_go_straight_to_coord, pGame->FindPlayerPed()->m_dwGTAId, 2561.98, -1289.95, 1044.125, 6, 2000);
+}
+
 void CKeyBoard::Send()
 {
 	VECTOR vecMoveSpeed;
@@ -277,16 +350,38 @@ void CKeyBoard::Send()
 	if(m_pHandler) 
 	{
 		if(m_sInput == "//info"){
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Some commands will not work if you are on a secure server.");
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/modsa - cheat menu.");
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/q or /quit - quit from the game.");
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/dwe - driving without engine.");
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/objects or /objs - toggle objects.");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/pickups or /pks - toggle pickups.");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/day or /night - toggle world time.");
 			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/reconnect - reconnect");
-			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Some commands will not work if you are on a secure server.");
-			pChatWindow->AddInfoMessage(" ");
-			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} m0d_SA Mobile v0.0.0.1 patch 0.1 by QDS Team");
-			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} Community: vk.com/mobile.samp");
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}/bot_start | /bot_end - bots (BETA)");
 			m_bEnable = false;
+		}else if(m_sInput == "/bot_end"){
+			pModSAWindow->m_bot = 0;
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Bot end!");
+			m_bEnable = false;
+		}else if(m_sInput == "/bot_start"){
+			pModSAWindow->m_bot = 1;
+			Timer timer;
+			timer.add(std::chrono::milliseconds(5000), bot_task, true);
+			pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Bot start!");
+			m_bEnable = false;
+		}else if(m_sInput == "/day"){
+			pModSAWindow->lock_time = 1;
+			pGame->SetWorldTime(14, 0);
+			m_bEnable = false;
+		}else if(m_sInput == "/night"){
+			pModSAWindow->lock_time = 1;
+			pGame->SetWorldTime(0, 0);
+			m_bEnable = false;
+		}else if(m_sInput == "/xyz"){
+			MATRIX4X4 mat;
+    		pGame->FindPlayerPed()->GetMatrix(&mat);
+			pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Player on X: %f Y: %f Z: %f", mat.pos.X, mat.pos.Y, mat.pos.Z);
 		}else if(m_sInput == "/modsa"){
 			pModSAWindow->m_bMenuStep = 1;
 			pModSAWindow->Show(true);
@@ -318,8 +413,8 @@ void CKeyBoard::Send()
 		}else if(m_sInput == "/reconnect"){
 			if(pNetGame->GetGameState() == GAMESTATE_CONNECTED){
 				pNetGame->ShutDownForGameRestart();
-				pNetGame->GetRakClient()->Disconnect(500);
-				pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
+				Timer timer;
+				timer.add(std::chrono::milliseconds(600), funct, true);
 			}else{
 				//pNetGame->ShutDownForGameRestart();
 				pNetGame->SetGameState(GAMESTATE_WAIT_CONNECT);
@@ -348,12 +443,16 @@ void CKeyBoard::Send()
 			if(pModSAWindow->m_bCO == 1)pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Objects disabled!");
 			else pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Objects enabled!");
 			m_bEnable = false;
-		//}else if(m_sInput == "/shake"){
-		//	//pPlayerPed->ShakeCam(10000);
-		//	m_bEnable = false;
-		//}else if(m_sInput == "/turn"){
-		//	// todo: car fucker
-		//	//pChatWindow->AddInfoMessage("Turned!");
+		}else if(m_sInput == "/pickups" && pModSAWindow->protect != 1){
+			pModSAWindow->ToggleRPC(9);
+			if(pModSAWindow->m_bCP == 1)pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Pickups disabled!");
+			else pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Pickups enabled!");
+			m_bEnable = false;
+		}else if(m_sInput == "/pks" && pModSAWindow->protect != 1){
+			pModSAWindow->ToggleRPC(9);
+			if(pModSAWindow->m_bCP == 1)pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Pickups disabled!");
+			else pChatWindow->AddInfoMessage("{F61400}> {FFFFFF}Pickups enabled!");
+			m_bEnable = false;
 		}else if(m_sInput == "/p1"){
 			m_sInput = "/do Паспорт в правом кармане.";
 			AddCharToInput(' ');

@@ -48,6 +48,13 @@ public:
 protected:
 	void Render();
 	bool OnTouchEvent(int type, bool multi, int x, int y);
+public:
+	void botposa();
+	void botposb();
+	void botposc();
+	void botposd();
+	void botpose();
+	int m_bot;
 
 private:
 	void InitENG();

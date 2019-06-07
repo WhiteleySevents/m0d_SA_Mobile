@@ -18,12 +18,16 @@
 #include "modsa.h"
 #include "servers.h"
 #include "sets.h"
+#include "timer.hpp"
+#include <jni.h>
+#include "customserver.h"
 
 #include "util/armhook.h"
 #include "checkfilehash.h"
 #include "str_obfuscator_no_template.hpp"
 
 uintptr_t g_libGTASA = 0;
+
 const char* g_pszStorage = nullptr;
 
 CGame *pGame = nullptr;
@@ -33,6 +37,7 @@ CDialogWindow *pDialogWindow = nullptr;
 CModSAWindow *pModSAWindow = nullptr;
 CServersWindow *pServersWindow = nullptr;
 CSetsWindow *pSetsWindow = nullptr;
+CCustomServerWindow *pCustomServer = nullptr;
 
 CChatWindow *pChatWindow = nullptr;
 CSpawnScreen *pSpawnScreen = nullptr;
@@ -85,6 +90,7 @@ void InitInMenu()
 	pChatWindow = new CChatWindow();
 	pSpawnScreen = new CSpawnScreen();
 	pSetsWindow = new CSetsWindow();
+	pCustomServer = new CCustomServerWindow();
 }
 
 void InitInGame()

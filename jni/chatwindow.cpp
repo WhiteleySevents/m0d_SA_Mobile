@@ -33,7 +33,7 @@ CChatWindow::CChatWindow()
 	m_fChatPosX = pGUI->ScaleX( pSettings->Get().fChatPosX );
 	m_fChatPosY = pGUI->ScaleY( pSettings->Get().fChatPosY );
 	m_fChatSizeX = pGUI->ScaleX( pSettings->Get().fChatSizeX + 3.5 );
-	m_fChatSizeY = pGUI->ScaleY( pSettings->Get().fChatSizeY + 1.5 );
+	m_fChatSizeY = pGUI->ScaleY( pSettings->Get().fChatSizeY + 3.5 );
 	m_iMaxMessages = pSettings->Get().iChatMaxMessages;
 	Log("Chat pos: %f, %f, size: %f, %f", m_fChatPosX, m_fChatPosY, m_fChatSizeX, m_fChatSizeY);
 

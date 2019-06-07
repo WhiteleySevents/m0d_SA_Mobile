@@ -13,6 +13,8 @@
 #include "settings.h"
 #include "sets.h"
 #include "modsa.h"
+#include "dialog.h"
+#include "customserver.h"
 
 extern CGUI *pGUI;
 extern CGame *pGame;
@@ -22,6 +24,7 @@ extern CChatWindow *pChatWindow;
 extern CSettings *pSettings;
 extern CSetsWindow *pSetsWindow;
 extern CModSAWindow *pModSAWindow;
+extern CCustomServerWindow *pCustomServer;
 
 CServersWindow::CServersWindow()
 {
@@ -50,17 +53,11 @@ void CServersWindow::Clear()
 
 void CServersWindow::ShowAllServers()
 {
-   //if(ImGui::Button("Test Server", ImVec2(350, 50)))
-   //{
-   //    unsigned short port = 0;
-
-   //    pNetGame = new CNetGame( 
-   //        "",
-   //        port, 
-   //        pSetsWindow->username,
-   //        pSetsWindow->password);
-   //    Show(false);
-   //}
+   if(ImGui::Button("Custom Server", ImVec2(350, 50)))
+   {
+        pCustomServer->Show(true);
+        Show(false);
+   }
 
     if(ImGui::Button("Axwell World", ImVec2(350, 50)))
     {
@@ -113,6 +110,7 @@ void CServersWindow::ShowAllServers()
             pSetsWindow->password);
         Show(false);
         pModSAWindow->protect = 1;
+        CDialogWindow *pDialogWindow;
     }
 
     if(ImGui::Button("Chance RP", ImVec2(350, 50)))

@@ -5,12 +5,12 @@
 #include <vector>
 #include <list>
 #include <unistd.h>
+#include <jni.h>
 
 #define SAMP_VERSION	"0.3.7"
-#define PORT_VERSION	"1.0.0"
 
-#define MAX_PLAYERS		10040
-#define MAX_VEHICLES	20000
+#define MAX_PLAYERS		1004
+#define MAX_VEHICLES	2000
 #define MAX_PLAYER_NAME	24
 
 #define RAKSAMP_CLIENT

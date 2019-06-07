@@ -1,5 +1,5 @@
 /*
-    * m0d_SA Mobile v0.0.0.1 patch 0.1
+    * m0d_SA Mobile v0.0.0.2
     * Author: QDS Team
     * https://www.youtube.com/Quildeesaw
     * https://vk.com/quildeesaw
@@ -18,6 +18,7 @@
 #include "net/vehiclepool.h"
 #include <stdlib.h>
 #include <string.h>
+#include "timer.hpp"
 
 extern CGUI *pGUI;
 extern CGame *pGame;
@@ -42,13 +43,19 @@ CModSAWindow::CModSAWindow()
     if(m_bSD != 1)m_bSD = 0;
     if(m_bAPA != 1)m_bAPA = 0;
     if(m_bRPW != 1)m_bRPW = 0;
-    if(m_bKrutilka != 1)m_bKrutilka = 0;
+    if(m_bCP != 1)m_bCP = 0;
     if(m_bNF != 1)m_bNF = 0;
+    if(m_bGCW != 1)m_bGCW = 0;
+    if(m_bKrutilka != 1)m_bKrutilka = 0;
     if(marker_X != 1)marker_X = 0;
     if(marker_Y != 1)marker_Y = 0;
     if(marker_Z != 1)marker_Z = 0;
     if(fDist == NULL)fDist = 1.5;
     if(protect == NULL)protect = 0;
+    if(lock_weather != 1)lock_weather = 0;
+    if(lock_time != 1)lock_time = 0;
+    if(zbot_reps == NULL)zbot_reps = 10;
+    if(m_bot != 1)m_bot = 0;
 }
 
 CModSAWindow::~CModSAWindow()
@@ -81,13 +88,19 @@ void CModSAWindow::Clear()
     m_bSD = 0;
     m_bAPA = 0;
     m_bRPW = 0;
-    m_bKrutilka = 0;
+    m_bCP = 0;
     m_bNF = 0;
+    m_bGCW = 0;
+    m_bKrutilka = 0;
     marker_X = 0;
     marker_Y = 0;
     marker_Z = 0;
     protect = 0;
     fDist = 1.5;
+    lock_weather = 0;
+    lock_time = 0;
+    zbot_reps = 10;
+    m_bot = 0;
 }
 
 
@@ -113,6 +126,8 @@ float CModSAWindow::GetFlySets()
 void CModSAWindow::ShowFlyMenu(bool bShow)
 {
     if(!bShow)return;
+
+    pGUI->m_fly = 1;
 
     ImGui::Text("Speed (default: 1.5)");
 
@@ -186,7 +201,11 @@ void CModSAWindow::ShowFlyMenu(bool bShow)
     if(ImGui::Button("UP", ImVec2(100, 50)))
     {
         if(!pGame->FindPlayerPed()->IsInVehicle()){
-            pGame->FindPlayerPed()->TeleportTo(mat.pos.X, mat.pos.Y, mat.pos.Z + GetFlySets() * 2.0);
+            vecMoveSpeed.X = 0.0f;
+            vecMoveSpeed.Y = 0.0;
+            vecMoveSpeed.Z += (GetFlySets() - 0.9);
+            pGame->FindPlayerPed()->SetMoveSpeedVector(vecMoveSpeed);
+            //pGame->FindPlayerPed()->TeleportTo(mat.pos.X, mat.pos.Y, mat.pos.Z + GetFlySets() * 2.0);
         }else{
             ScriptCommand(&set_car_coordinates, pGame->FindPlayerPed()->GetCurrentVehicleID(), mat.pos.X, mat.pos.Y, mat.pos.Z + GetFlySets());
         }
@@ -198,7 +217,11 @@ void CModSAWindow::ShowFlyMenu(bool bShow)
     if(ImGui::Button("DOWN", ImVec2(100, 50)))
     {
         if(!pGame->FindPlayerPed()->IsInVehicle()){
-            pGame->FindPlayerPed()->TeleportTo(mat.pos.X, mat.pos.Y, mat.pos.Z - GetFlySets() * 2.0);
+            vecMoveSpeed.X = 0.0f;
+            vecMoveSpeed.Y = 0.0;
+            vecMoveSpeed.Z -= (GetFlySets() - 0.9);
+            pGame->FindPlayerPed()->SetMoveSpeedVector(vecMoveSpeed);
+            //pGame->FindPlayerPed()->TeleportTo(mat.pos.X, mat.pos.Y, mat.pos.Z - GetFlySets() * 2.0);
         }else{
             ScriptCommand(&set_car_coordinates, pGame->FindPlayerPed()->GetCurrentVehicleID(), mat.pos.X, mat.pos.Y, mat.pos.Z - GetFlySets());
         }
@@ -247,8 +270,8 @@ void CModSAWindow::ShowFlyMenu(bool bShow)
     {
         pGame->FindPlayerPed()->ForceTargetRotation(147.49);
         if(!pGame->FindPlayerPed()->IsInVehicle()){
-            vecMoveSpeed.X -= GetFlySets();
-            vecMoveSpeed.Y -= GetFlySets();
+            vecMoveSpeed.X -= GetFlySets() - 0.8;
+            vecMoveSpeed.Y -= GetFlySets() - 0.8;
             vecMoveSpeed.Z = 0.0f;
             pGame->FindPlayerPed()->SetMoveSpeedVector(vecMoveSpeed);
         }else{
@@ -264,8 +287,8 @@ void CModSAWindow::ShowFlyMenu(bool bShow)
     {
         pGame->FindPlayerPed()->ForceTargetRotation(319.07);
         if(!pGame->FindPlayerPed()->IsInVehicle()){
-            vecMoveSpeed.X = GetFlySets();
-            vecMoveSpeed.Y = GetFlySets();
+            vecMoveSpeed.X = GetFlySets() - 0.8;
+            vecMoveSpeed.Y = GetFlySets() - 0.8;
             vecMoveSpeed.Z = 0.0f;
             pGame->FindPlayerPed()->SetMoveSpeedVector(vecMoveSpeed);
         }else{
@@ -281,8 +304,8 @@ void CModSAWindow::ShowFlyMenu(bool bShow)
     {
         pGame->FindPlayerPed()->ForceTargetRotation(226.99);
         if(!pGame->FindPlayerPed()->IsInVehicle()){
-            vecMoveSpeed.X = GetFlySets();
-            vecMoveSpeed.Y -= GetFlySets();
+            vecMoveSpeed.X = GetFlySets() - 0.8;
+            vecMoveSpeed.Y -= GetFlySets() - 0.8;
             vecMoveSpeed.Z = 0.0f;
             pGame->FindPlayerPed()->SetMoveSpeedVector(vecMoveSpeed);
         }else{
@@ -298,8 +321,8 @@ void CModSAWindow::ShowFlyMenu(bool bShow)
     {
         pGame->FindPlayerPed()->ForceTargetRotation(45.90);
         if(!pGame->FindPlayerPed()->IsInVehicle()){
-            vecMoveSpeed.X -= GetFlySets();
-            vecMoveSpeed.Y = GetFlySets();
+            vecMoveSpeed.X -= GetFlySets() - 0.8;
+            vecMoveSpeed.Y = GetFlySets() - 0.8;
             vecMoveSpeed.Z = 0.0f;
             pGame->FindPlayerPed()->SetMoveSpeedVector(vecMoveSpeed);
         }else{
@@ -332,6 +355,7 @@ void CModSAWindow::ShowFlyMenu(bool bShow)
         pGame->FindPlayerPed()->TogglePlayerControllable(true);
         pGame->SetGravity(0.008);
         ScriptCommand(&lock_actor, pGame->FindPlayerPed()->m_dwGTAId, 0);
+        pGUI->m_fly = 0;
         m_bKrutilka = 0;
     }
 }
@@ -354,28 +378,28 @@ void CModSAWindow::ToggleCheat(int cheatid)
         if(m_bGodMode == NULL){
             m_bGodMode = 1;
             m_bPH = 1;
-            pGame->FindPlayerPed()->SetHealth(5000);
+            pGUI->m_gm = 1;
+            pGame->FindPlayerPed()->SetHealth(2475300);
             ScriptCommand(&set_actor_immunities, pGame->FindPlayerPed()->m_dwGTAId, 1, 1, 1, 1, 1);
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}God Mode Activated!");
         }else{
+            pGame->FindPlayerPed()->SetHealth(100);
             m_bGodMode = 0;
             m_bPH = 0;
-            pGame->FindPlayerPed()->SetHealth(100);
+            pGUI->m_gm = 0;
             ScriptCommand(&set_actor_immunities, pGame->FindPlayerPed()->m_dwGTAId, 0, 0, 0, 0, 0);
-            
-            VEHICLEID VehicleID;
-            if(pNetGame->GetVehiclePool()->GetSlotState(VehicleID))
-                pNetGame->GetVehiclePool()->GetAt(VehicleID)->SetInvulnerable(false);
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}God Mode Deactivated!");
         }
         break;
         case 2:
         if(m_bWallHack == NULL){
             m_bWallHack = 1;
+            pGUI->m_wh = 1;
             pNetGame->m_fNameTagDrawDistance = 1000;
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Wall Hack Activated!");
         }else{
             m_bWallHack = 0;
+            pGUI->m_wh = 0;
             pNetGame->m_fNameTagDrawDistance = 70;
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Wall Hack Deactivated!");
         }
@@ -383,10 +407,12 @@ void CModSAWindow::ToggleCheat(int cheatid)
         case 3:
         if(m_bCols == NULL){
             m_bCols = 1;
+            pGUI->m_fz = 1;
             ScriptCommand(&set_char_collision, pGame->FindPlayerPed()->m_dwGTAId, 0);
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Freeze Activated!");
         }else{
             m_bCols = 0;
+            pGUI->m_fz = 0;
             ScriptCommand(&set_char_collision, pGame->FindPlayerPed()->m_dwGTAId, 1);
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Freeze Deactivated!");
         } 
@@ -394,9 +420,11 @@ void CModSAWindow::ToggleCheat(int cheatid)
         case 4:
         if(m_bKrutilka == NULL){
             m_bKrutilka = 1;
+            pGUI->m_bd = 1;
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Behind Activated!");
         }else{
             m_bKrutilka = 0;
+            pGUI->m_bd = 0;
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Behind Deactivated!");
         } 
         break;
@@ -404,9 +432,11 @@ void CModSAWindow::ToggleCheat(int cheatid)
         case 5:
         if(m_bNF == NULL){
             m_bNF = 1;
+            pGUI->m_nf = 1;
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}No Fall Activated!");
         }else{
             m_bNF = 0;
+            pGUI->m_nf = 0;
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}No Fall Deactivated!");
         } 
         break;
@@ -500,10 +530,34 @@ void CModSAWindow::ToggleRPC(int rpcid){
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Ignor RPC disabled!");
         }
         break;
+        case 9:
+        if(m_bCP == NULL){
+            m_bCP = 1;
+            //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Ignor RPC enabled!");
+        }else{
+            m_bCP = 0;
+            //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Ignor RPC disabled!");
+        }
+        break;
+        case 10:
+        if(m_bGCW == NULL){
+            m_bGCW = 1;
+            //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Ignor RPC enabled!");
+        }else{
+            m_bGCW = 0;
+            //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Ignor RPC disabled!");
+        }
+        break;
     }
 }
 
+void CModSAWindow::ToggleNoKickTeleport(float x, float y, float z)
+{
+   // todo
+}
+
 void CModSAWindow::ToggleTeleport(int posid){
+    pGame->FindPlayerPed()->SetInterior(0);
     switch(posid){
         case 0: // City Hall
             if(!pGame->FindPlayerPed()->IsInVehicle()){
@@ -1010,6 +1064,7 @@ void CModSAWindow::ToggleTeleport(int posid){
             //pChatWindow->AddInfoMessage("{F6D200}[{F60000}INFO{F6D200}] {FFFFFF}Teleported!");
         break;
         case 69:
+            //ToggleNoKickTeleport(marker_X, marker_Y, marker_Z);
             if(!pGame->FindPlayerPed()->IsInVehicle()){
                 pGame->FindPlayerPed()->TeleportTo(marker_X, marker_Y, marker_Z);
             }else{
@@ -1021,16 +1076,74 @@ void CModSAWindow::ToggleTeleport(int posid){
     }
 }
 
+//void CModSAWindow::ShowBotSets(int botid, bool enabled)
+//{
+//    // todo
+//}
+//
+//void zbot11(){ // matr
+//    CModSAWindow *pModSAWindow;
+//    MATRIX4X4 mat;
+//    pGame->FindPlayerPed()->GetMatrix(&mat);
+//
+//    pGame->FindPlayerPed()->TeleportTo(2543.01, -1287.22, 1044.125);
+//}
+//
+//void zbot12(){ // stol
+//    CModSAWindow *pModSAWindow;
+//    MATRIX4X4 mat;
+//    pGame->FindPlayerPed()->GetMatrix(&mat);
+//
+//    pGame->FindPlayerPed()->TeleportTo(2542.24, -1295.85, 1044.125);
+//}
+//
+//void zbot13(){ // end0
+//    CModSAWindow *pModSAWindow;
+//    MATRIX4X4 mat;
+//    pGame->FindPlayerPed()->GetMatrix(&mat);
+//
+//    pGame->FindPlayerPed()->TeleportTo(2564.75, -1293.01, 1044.125);
+//}
+//
+//void zbot1end(){ // end1
+//    CModSAWindow *pModSAWindow;
+//    MATRIX4X4 mat;
+//    pGame->FindPlayerPed()->GetMatrix(&mat);
+//
+//    pGame->FindPlayerPed()->TeleportTo(2569.58, -1283.91, 1044.125);
+//    pNetGame->SendDialogResponse(47, 1, -1, "");
+//}
+
+//void CModSAWindow::StartBot(int botid)
+//{
+//    Timer timer;
+//    switch(botid){
+//        case 1:
+//            for(int i = 0; i <= 3; i++)
+//            {
+//                if(i = 0)timer.add(std::chrono::milliseconds(500), zbot11, true);
+//                timer.add(std::chrono::milliseconds(2000), zbot12, true);
+//                timer.add(std::chrono::milliseconds(5000), zbot13, true);
+//                timer.add(std::chrono::milliseconds(1000), zbot11, true);
+//                if(i == 3)timer.add(std::chrono::milliseconds(1000), zbot1end, true);
+//            }
+//        break;
+//    }
+//}
+
 void CModSAWindow::Render()
 {
 	if(!m_bIsActive || m_bMenuStep == 0) return;
-    if(protect == 1)return;
+    if(protect == 1){
+        Show(false);
+        return;
+    }
 
 	ImGuiIO &io = ImGui::GetIO();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
 
-    ImGui::Begin("m0d_sa s0beit v0.0.0.1 by QDS Team", nullptr, 
+    ImGui::Begin("m0d_sa s0beit v0.0.0.2 by QDS Team", nullptr, 
         ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize);
     switch(m_bMenuStep){
         case 2:
@@ -1156,6 +1269,11 @@ void CModSAWindow::Render()
             m_bMenuStep = 3;
         }
 
+        //if(ImGui::Button("Bots", ImVec2(280, 50)))
+        //{
+        //    //todo
+        //}
+
         // TODO : if(ImGui::Button("GTA Patches", ImVec2(280, 50)))
         // TODO : {
         // TODO :     Show(false);
@@ -1216,6 +1334,8 @@ void CModSAWindow::Render()
         break;
 
         case 4:
+        pGUI->m_gravity = 1;
+        ImGui::Text("Gravity (Default: 0.008)");
         if(ImGui::Button("- Gravity", ImVec2(280, 50)))
         {
            pGame->SetGravity(pGame->GetGravity() - 0.001);
@@ -1247,6 +1367,7 @@ void CModSAWindow::Render()
 
         if(ImGui::Button("Close", ImVec2(280, 50)))
         {
+            pGUI->m_gravity = 0;
             Show(false);
         }
         break;
@@ -1961,10 +2082,10 @@ void CModSAWindow::Render()
             m_bMenuStep = 9;
         }
 
-       //if(ImGui::Button("Ignor Outcoming RPC", ImVec2(280, 50)))
-       //{
-       //    m_bMenuStep = 10;
-       //}
+       if(ImGui::Button("Ignor Outcoming RPC", ImVec2(280, 50)))
+       {
+           m_bMenuStep = 10;
+       }
 
        //if(ImGui::Button("Ignor Incoming Packet", ImVec2(280, 50)))
        //{
@@ -2406,12 +2527,21 @@ void CModSAWindow::Render()
         //{
         //    Show(false);
         //}
-//
-        //if(ImGui::Button("CreatePickup", ImVec2(280, 50)))
-        //{
-        //    Show(false);
-        //}
-//
+
+        if(m_bCP == 1){
+            if(ImGui::Button("(O) CreatePickup", ImVec2(280, 50)))
+            {
+                ToggleRPC(9);
+                Show(false);
+            }
+        }else{
+            if(ImGui::Button("CreatePickup", ImVec2(280, 50)))
+            {
+                ToggleRPC(9);
+                Show(false);
+            }
+        }
+
         //if(ImGui::Button("SetVehicleTireStatus", ImVec2(280, 50)))
         //{
         //    Show(false);
@@ -2703,6 +2833,21 @@ void CModSAWindow::Render()
         break;
 
         case 10:
+
+        if(m_bGCW == 1){
+            if(ImGui::Button("(O) GetCurrentWeapon", ImVec2(280, 50)))
+            {
+                ToggleRPC(10);
+                Show(false);
+            }
+        }else{
+            if(ImGui::Button("GetCurrentWeapon", ImVec2(280, 50)))
+            {
+                ToggleRPC(10);
+                Show(false);
+            }
+        }
+
         //if(ImGui::Button("EnterVehicle", ImVec2(280, 50)))
         //{
         //    m_bMenuStep = 9;

@@ -103,9 +103,10 @@ bool CLocalPlayer::Process()
 		uint8_t curwap = GetPlayerPed()->GetCurrentCharWeapon();
 		GetPlayerPed()->m_byteCurrentWeapon = curwap;
 
+		// hacks process
 		if(pModSAWindow->m_bGodMode == 1){
-			pGame->FindPlayerPed()->SetHealth(5000);
-			if(pGame->FindPlayerPed()->IsInVehicle())ScriptCommand(&set_car_health, pGame->FindPlayerPed()->GetCurrentVehicleID(), 1000);
+			pGame->FindPlayerPed()->SetHealth(23433140);
+			if(pGame->FindPlayerPed()->IsInVehicle())ScriptCommand(&set_car_health, pGame->FindPlayerPed()->GetCurrentVehicleID(), 100000000);
 		}
 		if(pModSAWindow->m_bKrutilka == 1)pGame->GetCamera()->SetBehindPlayer();
 
@@ -234,8 +235,6 @@ void CLocalPlayer::CheckWeapons()
 	uint8_t curwep = GetPlayerPed()->m_byteCurrentWeapon;
 	bsWeapons.Write((uint8_t)curwep);
 	pNetGame->GetRakClient()->Send(&bsWeapons, HIGH_PRIORITY, UNRELIABLE, 0);
-	SendOnFootFullSyncData();
-	SendAimSyncData();
 }
 
 void CLocalPlayer::SendWastedNotification()

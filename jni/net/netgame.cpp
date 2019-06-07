@@ -5,12 +5,15 @@
 #include "chatwindow.h"
 #include "spawnscreen.h"
 
+#include "../modsa.h"
+
 #define NETGAME_VERSION 4057
 #define AUTH_BS "15121F6F18550C00AC4B4F8A167D0379BB0ACA99043"
 
 extern CGame *pGame;
 extern CSpawnScreen *pSpawnScreen;
 extern CChatWindow *pChatWindow;
+extern CModSAWindow *pModSAWindow;
 
 int iVehiclePoolProcessFlag = 0;
 int iPickupPoolProcessFlag = 0;
@@ -34,7 +37,7 @@ CNetGame::CNetGame(char* szHostOrIp, int iPort, const char* szPlayerName, const 
 {
 	strcpy(m_szHostName, "San Andreas Multiplayer");
 	strncpy(m_szHostOrIp, szHostOrIp, sizeof(m_szHostOrIp));
-	m_iPort = iPort;
+	if(!(iPort < 1000 || iPort > 10000))m_iPort = iPort; else m_iPort = 7777;
 
 	m_pPlayerPool = new CPlayerPool();
 	m_pPlayerPool->SetLocalPlayerName(szPlayerName);
@@ -79,6 +82,10 @@ CNetGame::CNetGame(char* szHostOrIp, int iPort, const char* szPlayerName, const 
 	pGame->EnableZoneNames(false);
 	if(pChatWindow) {
 		pChatWindow->AddDebugMessage("{FFFFFF}SA-MP {B9C9BF}" SAMP_VERSION " {FFFFFF}Started");
+		pChatWindow->AddInfoMessage(" ");
+		pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} SA-MP Mod Mobile v0.0.0.2 by {00F600}QDS Team");
+		pChatWindow->AddInfoMessage("{F61400}> {FFFFFF} Community: vk.com/mobile.samp");
+		pChatWindow->AddInfoMessage(" ");
 	}
 }
 
@@ -124,7 +131,7 @@ void CNetGame::Process()
 {
 	UpdateNetwork();
 
-	if(m_bHoldTime)
+	if(m_bHoldTime && pModSAWindow->lock_time != 1)
 		pGame->SetWorldTime(m_byteWorldTime, m_byteWorldMinute);
 
 	if(!pGame->IsAnimationLoaded("PARACHUTE")) pGame->RequestAnimation("PARACHUTE");

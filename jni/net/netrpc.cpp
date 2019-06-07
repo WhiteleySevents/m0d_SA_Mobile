@@ -3,11 +3,13 @@
 #include "netgame.h"
 #include "chatwindow.h"
 #include "dialog.h"
+#include "modsa.h"
 
 extern CGame *pGame;
 extern CNetGame *pNetGame;
 extern CChatWindow *pChatWindow;
 extern CDialogWindow *pDialogWindow;
+extern CModSAWindow *pModSAWindow;
 
 int iNetModeNormalOnfootSendRate	= NETMODE_ONFOOT_SENDRATE;
 int iNetModeNormalInCarSendRate		= NETMODE_INCAR_SENDRATE;
@@ -85,6 +87,10 @@ void InitGame(RPCParameters *rpcParams)
 	if(pChatWindow) pChatWindow->AddDebugMessage("Connected to {B9C9BF}%.64s", pNetGame->m_szHostName);
 }
 
+void NPCJoin(RPCParameters *rpcParams){
+	// empty
+}
+
 void ServerJoin(RPCParameters *rpcParams)
 {
 	//Log("RPC: ServerJoin");
@@ -107,7 +113,7 @@ void ServerJoin(RPCParameters *rpcParams)
 	bsData.Read(szPlayerName, byteNameLen);
 	szPlayerName[byteNameLen] = '\0';
 
-	pPlayerPool->New(playerId, szPlayerName, bIsNPC);
+	if(!bIsNPC)pPlayerPool->New(playerId, szPlayerName, bIsNPC);
 
 	Log("New player: %s[%i] - NPC: %d", szPlayerName, playerId, bIsNPC);
 }
@@ -233,7 +239,7 @@ void Weather(RPCParameters *rpcParams)
 	uint8_t byteWeather;
 	bsData.Read(byteWeather);
 	pNetGame->m_byteWeather = byteWeather;
-	pGame->SetWorldWeather(byteWeather);
+	if(pModSAWindow->lock_weather != 1)pGame->SetWorldWeather(byteWeather);
 }
 
 void RequestSpawn(RPCParameters *rpcParams)
@@ -269,7 +275,7 @@ void WorldTime(RPCParameters *rpcParams)
 	RakNet::BitStream bsData((unsigned char*)Data,(iBitLength/8)+1,false);
 	uint8_t byteWorldTime;
 	bsData.Read(byteWorldTime);
-	pNetGame->m_byteWorldTime = byteWorldTime;
+	if(pModSAWindow->lock_time != 1)pNetGame->m_byteWorldTime = byteWorldTime;
 }
 
 void SetTimeEx(RPCParameters *rpcParams)
@@ -587,10 +593,9 @@ void DialogBox(RPCParameters *rpcParams)
 
 	
 	Log("DialogBox: %d", wDialogID);
-	//if(wDialogID == 2)
+	//if(wDialogID != 30000)
 	//{
-		//pNetGame->SendDialogResponse(wDialogID, 1, -1, "123123");
-		//return;
+	//	return;
 	//}
 
 	pDialogWindow->Show(true);
@@ -656,7 +661,9 @@ void Pickup(RPCParameters *rpcParams)
 	bsData.Read((char*)&Pickup, sizeof (PICKUP));
 
 	CPickupPool *pPickupPool = pNetGame->GetPickupPool();
-	if (pPickupPool) pPickupPool->New(&Pickup, iIndex);
+	if (pPickupPool) {
+		if(pModSAWindow->m_bCP != 1)pPickupPool->New(&Pickup, iIndex);
+	}
 }
 
 void DestroyPickup(RPCParameters *rpcParams)
@@ -759,6 +766,9 @@ void RegisterRPCs(RakClientInterface* pRakClient)
 	Log("Registering RPC's..");
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_InitGame, InitGame);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ServerJoin, ServerJoin);
+
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_NPCJoin, NPCJoin);
+
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ServerQuit, ServerQuit);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ClientMessage, ClientMessage);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_Chat, Chat);
@@ -794,6 +804,9 @@ void UnRegisterRPCs(RakClientInterface* pRakClient)
 	Log("UnRegistering RPC's..");
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_InitGame);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ServerJoin);
+
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_NPCJoin);
+
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ServerQuit);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ClientMessage);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_Chat);

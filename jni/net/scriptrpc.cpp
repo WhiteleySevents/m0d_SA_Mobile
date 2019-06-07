@@ -1109,111 +1109,99 @@ void ScrResetPlayerWeapons(RPCParameters *rpcParams)
 }
 
 void ScrShowTextDraw(RPCParameters *rpcParams){
-	// goodbye
+	// empty
 }
 
 void ScrTextDrawSetString(RPCParameters *rpcParams){
-	// goodbye
+	// empty
 }
 
 void ScrHideTextDraw(RPCParameters *rpcParams){
-	// goodbye
+	// empty
 }
 
-void ScrEditTextDraw(RPCParameters *rpcParams){
-	// goodbye	
+void ScrTextDrawHideForPlayer(RPCParameters *rpcParams){
+	// empty
 }
 
 void ScrShowMenu(RPCParameters *rpcParams)
 {
-	// goodbye
+	// empty
 }
 
 void ScrHideMenu(RPCParameters *rpcParams)
 {
-	// goodbye
+	// empty
 }
 
 void ScrSetObjectMaterial(RPCParameters *rpcParams)
 {
-	// goodbye
+	// empty
 }
 
 void ScrSetPlayerObjectMaterial(RPCParameters *rpcParams)
 {
-	// goodbye
-}
-
-void ScrShowActor(RPCParameters *rpcParams)
-{
-	// goodbye
-}
-
-void ScrHideActor(RPCParameters *rpcParams)
-{
-	// goodbye
+	// empty
 }
 
 void ScrSetActorPos(RPCParameters *rpcParams)
 {
-	// goodbye
+	// empty
 }
 
 void ScrSetActorHealth(RPCParameters *rpcParams)
 {
-	// goodbye
+	// empty
 }
 
 void ScrSetActorFacingAngle(RPCParameters *rpcParams)
 {
-	// goodbye
+	// empty
 }
 
-void ScrCreateActor(RPCParameters* rpcParams)
-{
-	// goodbye	
+void ScrApplyActorAnimation(RPCParameters *rpcParams){
+	// empty
 }
 
-void ScrDestroyActor(RPCParameters* rpcParams)
-{
-	// goodbye	
+void ScrClearActorAnimations(RPCParameters *rpcParams){
+	// empty
 }
 
-void ScrMoveActorTo(RPCParameters* rpcParams)
-{
-	// goodbye	
+void ScrSetActorVirtualWorld(RPCParameters *rpcParams){
+	// empty
 }
 
-void ScrActorKillPlayer(RPCParameters* rpcParams)
-{
-	// goodbye	
+void ScrSetActorInvulnerable(RPCParameters *rpcParams){
+	// empty
 }
 
-void ScrActorEnterVehicle(RPCParameters* rpcParams)
+void ScrShowActor(RPCParameters* rpcParams)
 {
-	// goodbye	
+	// empty	
 }
 
-void ScrActorDriveVehicleToPoint(RPCParameters* rpcParams)
+void ScrHideActor(RPCParameters* rpcParams)
 {
-	// goodbye		
-}
-
-void ScrActorExitVehicle(RPCParameters* rpcParams)
-{
-	// goodbye		
+	// empty	
 }
 
 void RegisterScriptRPCs(RakClientInterface* pRakClient)
 {
 	Log("Registering ScriptRPC's..");
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrCreateActor, ScrShowActor);
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrDestroyActor, ScrHideActor);
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrSetActorHealth, ScrSetActorHealth);
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrSetActorFacingAngle, ScrSetActorFacingAngle);
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrSetActorPos, ScrSetActorPos);
+
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrApplyActorAnimation, ScrApplyActorAnimation);
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrClearActorAnimations, ScrClearActorAnimations);
 
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrSetObjectMaterial, ScrSetObjectMaterial);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrSetPlayerObjectMaterial, ScrSetPlayerObjectMaterial);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrTextDrawSetString, ScrTextDrawSetString);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrShowTextDraw, ScrShowTextDraw);
-	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrHideTextDraw, ScrHideTextDraw);
-	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrEditTextDraw, ScrEditTextDraw);
+	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrTextDrawHideForPlayer, ScrTextDrawHideForPlayer);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrShowMenu, ScrShowMenu);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrHideMenu, ScrHideMenu);
 	pRakClient->RegisterAsRemoteProcedureCall(&RPC_ScrDisplayGameText, ScrDisplayGameText);
@@ -1278,22 +1266,21 @@ void UnRegisterScriptRPCs(RakClientInterface* pRakClient)
 {
 	Log("Unregistering ScriptRPC's..");
 
-	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrShowActor);
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrCreateActor);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrSetActorPos);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrSetActorFacingAngle);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrSetActorHealth);
-
-	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrHideActor);
-
-	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrTextDrawSetString);
-	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ClickTextDraw);
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrDestroyActor);
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrApplyActorAnimation);
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrClearActorAnimations);
 
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrSetObjectMaterial);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrSetPlayerObjectMaterial);
 
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrShowTextDraw);
-	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrHideTextDraw);
-	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrEditTextDraw);
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrTextDrawSetString);
+	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrTextDrawHideForPlayer);
+
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrShowMenu);
 	pRakClient->UnregisterAsRemoteProcedureCall(&RPC_ScrHideMenu);
 

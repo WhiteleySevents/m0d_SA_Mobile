@@ -59,6 +59,8 @@ int RPC_EnterEditObject = 27;
 int RPC_EditObject = 117;
 
 int RPC_ScrTextDrawSetString = 105;
+int RPC_ScrShowTextDraw = 134;
+int RPC_ScrTextDrawHideForPlayer = 135;
 
 int RPC_ScrSetSpawnInfo = 68;
 int RPC_ScrSetPlayerTeam = 69;
@@ -120,9 +122,7 @@ int RPC_ScrInitMenu = 76;
 int RPC_ScrShowMenu = 77;
 int RPC_ScrHideMenu = 78;
 int RPC_ScrSetPlayerWantedLevel = 133;
-int RPC_ScrShowTextDraw = 134;
-int RPC_ScrHideTextDraw = 135;
-int RPC_ScrEditTextDraw = 105;
+
 int RPC_ScrAddGangZone = 108;
 int RPC_ScrRemoveGangZone = 120;
 int RPC_ScrFlashGangZone = 121;
@@ -131,8 +131,8 @@ int RPC_ScrStopFlashGangZone = 85;
 int RPC_ScrApplyPlayerAnimation = 86;
 int RPC_ScrClearPlayerAnimations = 87;
 
-int RPC_ScrShowActor = 171;
-int RPC_ScrHideActor = 172;
+int RPC_ScrCreateActor = 171;
+int RPC_ScrDestroyActor = 172;
 int RPC_ScrSetActorFacingAngle = 175;
 int RPC_ScrSetActorPos = 176;
 int RPC_ScrSetActorHealth = 178;

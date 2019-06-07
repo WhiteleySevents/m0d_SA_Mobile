@@ -56,8 +56,8 @@ extern int RPC_MapMarker;
 extern int RPC_ScrTextDrawSetString;
 
 
-extern int RPC_ScrShowActor;
-extern int RPC_ScrHideActor;
+extern int RPC_ScrCreateActor;
+extern int RPC_ScrDestroyActor;
 extern int RPC_ScrSetActorFacingAngle;
 extern int RPC_ScrSetActorPos;
 extern int RPC_ScrSetActorHealth;
@@ -121,8 +121,7 @@ extern int RPC_ScrShowMenu;
 extern int RPC_ScrHideMenu;
 extern int RPC_ScrSetPlayerWantedLevel;
 extern int RPC_ScrShowTextDraw;
-extern int RPC_ScrHideTextDraw;
-extern int RPC_ScrEditTextDraw;
+extern int RPC_ScrTextDrawHideForPlayer;
 extern int RPC_ScrAddGangZone;
 extern int RPC_ScrRemoveGangZone;
 extern int RPC_ScrFlashGangZone;

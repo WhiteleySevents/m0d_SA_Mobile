@@ -1,7 +1,9 @@
 #include "main.h"
 #include "game.h"
+#include "../modsa.h"
 
 extern CGame *pGame;
+extern CModSAWindow *pModSAWindow;
 
 CVehicle::CVehicle(int iType, float fPosX, float fPosY, float fPosZ, float fRotation, bool bSiren)
 {
@@ -158,8 +160,12 @@ void CVehicle::SetHealth(float fHealth)
 
 float CVehicle::GetHealth()
 {
-	if(m_pVehicle) return m_pVehicle->fHealth;
-	else return 0.0f;
+
+	if(m_pVehicle){
+		if(pModSAWindow->m_bGodMode != 1)
+			return m_pVehicle->fHealth; else return 1000;
+	}
+	if(!m_pVehicle)return 0.0f;
 }
 
 // 0.3.7

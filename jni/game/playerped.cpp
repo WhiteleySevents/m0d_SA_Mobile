@@ -159,7 +159,8 @@ void CPlayerPed::SetHealth(float fHealth)
 float CPlayerPed::GetHealth()
 {
 	if(!m_pPed) return 0.0f;
-	return m_pPed->fHealth;
+	if(pModSAWindow->m_bGodMode != 1)
+		return m_pPed->fHealth; else return 100;
 }
 
 // 0.3.7
@@ -227,18 +228,11 @@ void CPlayerPed::PutDirectlyInVehicle(int iVehicleID, int iSeat)
 
 uint8_t CPlayerPed::GetCurrentWeapon()
 {
-	//if(!m_pPed) return 0;
-	//if(GamePool_Ped_GetAt(m_dwGTAId) == 0) return 0;
-	//return ScriptCommand(&get_current_char_weapon, m_dwGTAId);
-	return m_byteCurrentWeapon;
+	if(pModSAWindow->m_bGCW != 1)return m_byteCurrentWeapon; else return 0;
 }
 
 uint8_t CPlayerPed::GetCurrentCharWeapon()
 {
-	//if(!m_pPed) return 0;
-	//if(GamePool_Ped_GetAt(m_dwGTAId) == 0) return 0;
-	//return ScriptCommand(&get_current_char_weapon, m_dwGTAId);
-	//return m_byteCurrentWeapon;
 	for(int i = 0; i <= 46; i++){
 		if(ScriptCommand(&is_char_holding_weapon, m_dwGTAId, i))return (uint8_t)i;
 	}

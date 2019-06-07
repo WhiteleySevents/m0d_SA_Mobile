@@ -10,14 +10,19 @@
 #include "keyboard.h"
 #include "debug.h"
 #include "settings.h"
-#include "modsa.h"
+#include "../modsa.h"
 #include "servers.h"
+#include "customserver.h"
 #include <time.h>
 #include "sets.h"
+#include <ctime>
+#include <stdio.h>
+#include <string.h>
 
 extern CModSAWindow *pModSAWindow;
 extern CServersWindow *pServersWindow;
 extern CSetsWindow *pSetsWindow;
+extern CCustomServerWindow *pCustomServer;
 
 extern CSpawnScreen *pSpawnScreen;
 extern CPlayerTags *pPlayerTags;
@@ -106,7 +111,6 @@ void CGUI::Render()
 	ImGui::NewFrame();
 
 	RenderVersion();
-	//RenderRakNetStatistics();
 
 	if(pPlayerTags) pPlayerTags->Render();
 	
@@ -119,6 +123,7 @@ void CGUI::Render()
 	if(pDialogWindow) pDialogWindow->Render();
 
 	if(pServersWindow) pServersWindow->Render();
+	if(pCustomServer) pCustomServer->Render();
 	if(pSetsWindow) pSetsWindow->Render();
 
 	if(pSpawnScreen) pSpawnScreen->Render();
@@ -166,28 +171,38 @@ bool CGUI::OnTouchEvent(int type, bool multi, int x, int y)
 
 void CGUI::RenderVersion()
 {
-   //char str[4096];
+	char buffer[80];
+	time_t seconds = time(NULL);
+	tm* timeinfo = localtime(&seconds);
+	char* format = "[%I:%M:%S]";
+	strftime(buffer, 80, format, timeinfo);
 
-   //sprintf(str, "m0d_SA s0beit v0.0.0.1 by QDS Team");
+   	char str[4096];
+   	sprintf(str, "%s\n", buffer);
 
-	//ImGui::GetBackgroundDrawList()->AddText(
-	//	ImVec2(16.4, 691.4), 
-	//	ImColor(0,0,0,255), str);
-	//ImGui::GetBackgroundDrawList()->AddText(
-	//	ImVec2(16.4, 689.8), 
-	//	ImColor(0,0,0,255), str);
-//
-	//ImGui::GetBackgroundDrawList()->AddText(
-	//	ImVec2(14.8, 689.8), 
-	//	ImColor(0,0,0,255), str);
-	//ImGui::GetBackgroundDrawList()->AddText(
-	//	ImVec2(14.8, 691.4), 
-	//	ImColor(0,0,0,255), str);
-	//ImGui::GetBackgroundDrawList()->AddText(
-	//	ImVec2(15, 690), 
-	//	ImColor(246,119,0,255), str);
+   	if(m_gm == 1)strcat(str, "   - Inv\n");
+   	if(m_fz == 1)strcat(str, "   - Freeze\n");
+   	if(m_nf == 1)strcat(str, "   - NoFall\n");
+   	if(m_wh == 1)strcat(str, "   - WallHack\n");
+   	if(m_fly == 1)strcat(str, "   - Fly\n");
+   	if(m_bd == 1)strcat(str, "   - Behind\n");
+   	if(m_gravity == 1)strcat(str, "   - Gravity\n");
 
-	// minus palevo
+	ImGui::GetBackgroundDrawList()->AddText(
+		ImVec2(16.4 + 25, 291.4), 
+		ImColor(0,0,0,255), str);
+	ImGui::GetBackgroundDrawList()->AddText(
+		ImVec2(16.4 + 25, 289.8), 
+		ImColor(0,0,0,255), str);	
+	ImGui::GetBackgroundDrawList()->AddText(
+		ImVec2(14.8 + 25, 289.8), 
+		ImColor(0,0,0,255), str);
+	ImGui::GetBackgroundDrawList()->AddText(
+		ImVec2(14.8 + 25, 291.4), 
+		ImColor(0,0,0,255), str);
+	ImGui::GetBackgroundDrawList()->AddText(
+		ImVec2(15 + 25, 290), 
+		ImColor(246,119,0,255), str);
 }
 
 void CGUI::RenderRakNetStatistics()

@@ -42,4 +42,13 @@ private:
 	ImVec2		m_vecMousePos;
 
 	bool		m_bNeedClearMousePos;
+
+public:
+	int 		m_gm;
+	int 		m_fz;
+	int 		m_wh;
+	int 		m_fly;
+	int 		m_nf;
+	int 		m_bd;
+	int 		m_gravity;
 };

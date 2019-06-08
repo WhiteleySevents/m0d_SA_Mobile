@@ -10,7 +10,7 @@ m0d_SA s0beit Mobile
 * Improved and fixed God Mode (Inv).
 * /day, /night (cmds) - change of day and night.
 * /pickups or /pks - to disable pickups.
-* In the test mode, the bot of the factory worker [BETA] is added (Teams: /bot_start | /bot_end)
+* In the test mode, the bot of the factory worker [BETA] is added (cmds: /bot_start | /bot_end)
 * Fixed kick when entering Flin RP.
 * Fixed bug with dialogs on SanTrope RP.
 * Fixed a bug with AxwellWorld (Now the server does not display a dialog about updating the client)
